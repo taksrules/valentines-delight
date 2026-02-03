@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import JourneyGrid from '@/components/dashboard/JourneyGrid';
 import DashboardOverview from '@/components/dashboard/DashboardOverview';
 import JourneyTimeline from '@/components/dashboard/JourneyTimeline';
 import Container from '@/components/ui/Container';
@@ -98,13 +97,14 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   }
 
   return (
-    <div className="py-8 min-h-screen bg-neutral-50/50 dark:bg-neutral-950/50">
+    <div className="py-8 min-h-screen">
       <Container>
         <DashboardHeader
           userName={user.name}
-          journeyCount={journeys.length}
+          journeyCount={stats.published}
           monthlyLimit={monthlyLimit}
           activeTab={activeTab}
+          totalViews={stats.views}
         />
         
         {activeTab === 'overview' ? (

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import JourneyCard from './JourneyCard';
+import EmptyState from './EmptyState';
 
 interface Journey {
   id: string;
@@ -20,17 +21,7 @@ interface JourneyTimelineProps {
 
 export default function JourneyTimeline({ journeys, onDeleteJourney }: JourneyTimelineProps) {
   if (journeys.length === 0) {
-    return (
-      <div className="py-20 text-center">
-        <span className="text-6xl block mb-6">⏳</span>
-        <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
-          Your timeline is waiting...
-        </h3>
-        <p className="text-neutral-500 dark:text-neutral-400">
-          Create a journey to start building your visual history of emotional moments.
-        </p>
-      </div>
-    );
+    return <EmptyState />;
   }
 
   return (

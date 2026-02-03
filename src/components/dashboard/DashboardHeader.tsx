@@ -9,9 +9,10 @@ interface DashboardHeaderProps {
   journeyCount: number;
   monthlyLimit: number;
   activeTab: string;
+  totalViews: number;
 }
 
-export default function DashboardHeader({ userName, journeyCount, monthlyLimit, activeTab }: DashboardHeaderProps) {
+export default function DashboardHeader({ userName, journeyCount, monthlyLimit, activeTab, totalViews }: DashboardHeaderProps) {
   const navigation = [
     { name: 'Dashboard', tab: 'overview' },
     { name: 'My Journeys', tab: 'journeys' }
@@ -56,7 +57,7 @@ export default function DashboardHeader({ userName, journeyCount, monthlyLimit, 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {[
           { 
-            label: 'Journeys Created', 
+            label: 'Published', 
             count: journeyCount, 
             icon: (
               <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -66,17 +67,18 @@ export default function DashboardHeader({ userName, journeyCount, monthlyLimit, 
             bg: 'bg-rose-500/10'
           },
           { 
-            label: 'This Month', 
-            count: journeyCount, // Mocked for now
+            label: 'Total Views', 
+            count: totalViews,
             icon: (
               <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
             ),
             bg: 'bg-rose-500/10'
           },
           { 
-            label: 'Remaining', 
+            label: 'Slots Left', 
             count: remaining, 
             icon: (
               <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import JourneyCard from './JourneyCard';
 import Link from 'next/link';
+import EmptyState from './EmptyState';
 
 interface Stats {
   total: number;
@@ -53,16 +54,7 @@ export default function DashboardOverview({ latestJourneys, onDeleteJourney }: D
             ))}
           </div>
         ) : (
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl border-2 border-dashed border-neutral-200 dark:border-neutral-800 p-12 text-center">
-            <span className="text-5xl block mb-4">🎨</span>
-            <h3 className="text-lg font-bold mb-2">No journeys yet</h3>
-            <p className="text-neutral-500 dark:text-neutral-400 mb-6">Start creating your first emotional journey today!</p>
-            <Link href="/create">
-              <button className="px-6 py-2 bg-rose-500 text-white rounded-xl font-bold">
-                Get Started
-              </button>
-            </Link>
-          </div>
+          <EmptyState />
         )}
       </section>
 
