@@ -140,6 +140,11 @@ model Journey {
   musicEnabled      Boolean   @default(true)
   musicTrackId      String?   // Jamendo track ID
   musicMood         String?   // romantic | playful | nostalgic
+  musicAutoPlay     Boolean   @default(false) // Auto-play vs opt-in prompt
+  
+  // Big Question Configuration (Phase 1)
+  includeBigQuestion Boolean  @default(true) // Show final YES/NO question
+  bigQuestionText    String?  @db.Text // Custom question (falls back to occasion default)
   
   // Template Reference (Phase 1)
   templateId        String?

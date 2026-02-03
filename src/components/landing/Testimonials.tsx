@@ -36,10 +36,10 @@ export default function Testimonials() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12 sm:mb-16"
         >
-          <h2 className="font-romantic text-3xl sm:text-4xl md:text-5xl text-rose-500 mb-4 tracking-tight dark:text-neutral-100">
+          <h2 className="font-romantic text-3xl sm:text-4xl md:text-5xl text-rose-500 mb-4 tracking-tight dark:text-rose-400">
             Love Stories Made Real
           </h2>
-          <p className="text-lg sm:text-xl text-neutral-700 max-w-2xl mx-auto dark:text-neutral-200">
+          <p className="text-lg sm:text-xl text-neutral-600 max-w-2xl mx-auto dark:text-neutral-300">
             Join hundreds of people creating unforgettable moments
           </p>
         </motion.div>
@@ -53,23 +53,24 @@ export default function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="bg-gradient-to-br from-white to-rose-50/30 dark:from-neutral-900 dark:to-neutral-900 rounded-2xl p-6 border border-rose-100 shadow-sm hover:shadow-lg h-full flex flex-col dark:border-neutral-800 dark:shadow-neutral-900/50 dark:hover:border-neutral-700"
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              className="bg-gradient-to-br from-white to-rose-50/30 dark:from-neutral-900 dark:to-neutral-900/50 rounded-2xl p-6 border border-rose-100 shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col dark:border-neutral-800 dark:shadow-neutral-900/50 dark:hover:border-rose-400/30 dark:hover:shadow-2xl"
             >
               {/* Rating stars */}
               <div className="flex gap-1 mb-4">
                 {Array.from({ length: testimonial.rating }).map((_, i) => (
-                  <span key={i} className="text-rose-400 text-lg">★</span>
+                  <span key={i} className="text-rose-400 text-lg dark:text-rose-400">★</span>
                 ))}
               </div>
 
               {/* Quote */}
-              <blockquote className="text-neutral-700 leading-relaxed mb-6 italic flex-1 dark:text-neutral-200">
+              <blockquote className="text-neutral-700 leading-relaxed mb-6 italic flex-1 dark:text-neutral-300">
                 "{testimonial.quote}"
               </blockquote>
 
               {/* Author */}
-              <div className="pt-4 border-t border-rose-100 dark:border-neutral-800">
-                <div className="font-semibold text-neutral-800 dark:text-neutral-100">{testimonial.author}</div>
+              <div className="pt-4 border-t border-rose-100 dark:border-neutral-700">
+                <div className="font-semibold text-neutral-900 dark:text-neutral-100">{testimonial.author}</div>
                 <div className="text-sm text-neutral-500 dark:text-neutral-400">{testimonial.role}</div>
               </div>
             </motion.div>
@@ -85,16 +86,16 @@ export default function Testimonials() {
           className="grid grid-cols-3 gap-6 sm:gap-8 max-w-4xl mx-auto"
         >
           <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-rose-500 mb-2 dark:text-neutral-100">500+</div>
-            <div className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-200">Journeys Created</div>
+            <div className="text-3xl sm:text-4xl font-bold text-rose-500 mb-2 dark:text-rose-400">500+</div>
+            <div className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300">Journeys Created</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-rose-500 mb-2 dark:text-neutral-100">92%</div>
-            <div className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-200">Say YES</div>
+            <div className="text-3xl sm:text-4xl font-bold text-rose-500 mb-2 dark:text-rose-400">92%</div>
+            <div className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300">Say YES</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-rose-500 mb-2 dark:text-neutral-100">4.9/5</div>
-            <div className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-200">Rating</div>
+            <div className="text-3xl sm:text-4xl font-bold text-rose-500 mb-2 dark:text-rose-400">4.9/5</div>
+            <div className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300">Rating</div>
           </div>
         </motion.div>
       </Container>

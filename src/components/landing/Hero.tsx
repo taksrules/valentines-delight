@@ -8,7 +8,7 @@ import Container from '@/components/ui/Container';
 
 export default function Hero() {
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-950 dark:to-neutral-950">
       {/* Subtle gradient overlays */}
       <div className="absolute inset-0 bg-gradient-radial from-rose-100/20 via-transparent to-transparent opacity-50 dark:from-neutral-800/40" />
       
@@ -24,7 +24,7 @@ export default function Hero() {
           className="mx-auto flex max-w-4xl flex-col items-center space-y-6 sm:space-y-8"
         >
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm shadow-sm border border-rose-100 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm shadow-sm border border-rose-100 dark:border-rose-400/30 dark:bg-neutral-900">
             <span className="text-xl">💕</span>
             <span className="text-sm font-medium text-rose-600 dark:text-rose-300">Perfect for Valentine's Day 2025</span>
           </div>
@@ -66,7 +66,7 @@ export default function Hero() {
           transition={{ delay: 0.3, duration: 0.8 }}
           className="mt-16 max-w-4xl mx-auto"
         >
-          <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-white/80 bg-white dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-neutral-900/50">
+          <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-white/80 bg-white dark:border-white/10 dark:bg-neutral-900 dark:shadow-neutral-900/50">
             <div className="aspect-video bg-gradient-to-br from-rose-50 to-pink-50 flex items-center justify-center p-8 dark:from-neutral-900 dark:to-neutral-950">
               <div className="text-center space-y-4">
                 <div className="text-5xl">💕</div>

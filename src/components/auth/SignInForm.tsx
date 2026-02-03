@@ -38,12 +38,14 @@ export default function SignInForm() {
       if (result?.error) {
         if (result.error === "CredentialsSignin") {
           setError("Invalid email or password");
+        } else if (result.error === "EmailNotVerified") {
+          setError("Please verify your email address before signing in. Check your inbox for the verification link.");
         } else {
           setError(result.error);
         }
       } else if (result?.ok) {
         // Successful login - redirect to dashboard
-        router.push("/");
+        router.push("/dashboard");
         router.refresh();
       }
     } catch {

@@ -1,10 +1,13 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function AuthErrorPage() {
+function ErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
@@ -42,5 +45,18 @@ export default function AuthErrorPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <div className="text-center py-20">
+        <div className="w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-neutral-600 dark:text-neutral-300">Loading...</p>
+      </div>
+    }>
+      <ErrorContent />
+    </Suspense>
   );
 }

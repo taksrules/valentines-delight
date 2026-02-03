@@ -4,27 +4,34 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import AnimatedText from './ui/AnimatedText';
 import Button from './ui/Button';
-import { valentineConfig, formatMessage } from '../app/config';
+import { getOccasionTheme, formatMessage, getGradientClasses } from '@/lib/occasion-themes';
 
 interface WelcomeScreenProps {
+  recipientName: string;
+  creatorName: string | null;
+  occasionType: string;
   onStart: () => void;
   retryCount: number;
 }
 
-export default function WelcomeScreen({ onStart, retryCount }: WelcomeScreenProps) {
+export default function WelcomeScreen({ recipientName, creatorName, occasionType, onStart, retryCount }: WelcomeScreenProps) {
   const [showButton, setShowButton] = useState(false);
+  const theme = getOccasionTheme(occasionType);
   
   const welcomeMessage = formatMessage(
-    valentineConfig.customMessages.welcome,
-    { recipientName: valentineConfig.recipientName }
+    theme.welcomeMessageDefault,
+    { recipientName }
   );
   
   const retryMessage = retryCount > 0 
     ? `Let's take this journey together... again 💭\n\n(Attempt ${retryCount + 1})`
     : null;
   
+  const gradientClasses = getGradientClasses(occasionType);
+  const mainEmoji = theme.emojis[0];
+  
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative z-10 bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
+    <div className={`min-h-screen flex items-center justify-center p-6 relative z-10 ${gradientClasses}`}>
       <motion.div 
         className="max-w-2xl w-full text-center space-y-8"
         initial={{ opacity: 0 }}
@@ -58,7 +65,7 @@ export default function WelcomeScreen({ onStart, retryCount }: WelcomeScreenProp
         
         <AnimatedText delay={0.3} duration={1}>
           <h1 className="text-5xl md:text-7xl mb-6">
-            💖
+            {mainEmoji}
           </h1>
         </AnimatedText>
         

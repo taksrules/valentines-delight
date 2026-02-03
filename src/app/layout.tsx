@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Valentine Journey 💕",
-  description: "An interactive and romantic journey through our most beautiful memories.",
+  title: "Emotional Moments 💕",
+  description: "Capture and share your most beautiful memories in an interactive journey.",
   icons: {
     icon: [
       { url: "/images/TenderlyFavIcon.png", sizes: "any" },

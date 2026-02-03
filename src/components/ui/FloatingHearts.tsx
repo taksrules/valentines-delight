@@ -27,7 +27,7 @@ export default function FloatingHearts({ count = 12 }: FloatingHeartsProps) {
       {hearts.map((heart) => (
         <motion.div
           key={heart.id}
-          className="absolute text-3xl md:text-4xl opacity-60 dark:opacity-70"
+          className="absolute text-3xl md:text-4xl opacity-60 dark:opacity-[0.05]"
           style={{
             left: heart.x,
             bottom: '-10%'

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface BackgroundMusicProps {
   autoPlay?: boolean;
+  occasionType?: string;
   clientId?: string; // Jamendo API client ID
 }
 
@@ -18,7 +19,8 @@ interface JamendoTrack {
 
 export default function BackgroundMusic({ 
   autoPlay = false,
-  clientId = 'YOUR_CLIENT_ID' // Replace with your Jamendo client ID
+  occasionType,
+  clientId = process.env.NEXT_PUBLIC_JAMENDO_CLIENT_ID || 'cba118dc'
 }: BackgroundMusicProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPrompt, setShowPrompt] = useState(!autoPlay);
@@ -33,8 +35,28 @@ export default function BackgroundMusic({
     }
   }, []);
   
+  // Auto-load and play music if autoPlay is enabled
+  useEffect(() => {
+    if (autoPlay && !currentTrack && !isLoading && !error) {
+      loadRomanticMusic().then(() => {
+        if (audioRef.current) {
+          audioRef.current.play().then(() => {
+            setIsPlaying(true);
+            setShowPrompt(false);
+          }).catch(err => {
+            console.error('Auto-play failed:', err);
+            // Show prompt if auto-play fails (browser restriction)
+            setShowPrompt(true);
+          });
+        }
+      });
+    }
+  }, [autoPlay]); // eslint-disable-line react-hooks/exhaustive-deps
+  
   // Fetch romantic music from Jamendo API
-  const loadRomanticMusic = async () => {
+  const loadRomanticMusic = async (): Promise<JamendoTrack | null> => {
+    if (isLoading) return null;
+    
     setIsLoading(true);
     setError(null);
     
@@ -54,24 +76,29 @@ export default function BackgroundMusic({
           audioRef.current.src = track.audio;
           console.log(`🎵 Loaded: "${track.name}" by ${track.artist_name}`);
         }
+        return track;
       } else {
         setError('No romantic tracks found');
+        return null;
       }
     } catch (err) {
       console.error('Error fetching music:', err);
       setError('Failed to load music');
+      return null;
     } finally {
       setIsLoading(false);
     }
   };
   
   const handlePlay = async () => {
+    let trackToPlay = currentTrack;
+    
     // Load music if not already loaded
-    if (!currentTrack && !error) {
-      await loadRomanticMusic();
+    if (!trackToPlay && !error) {
+      trackToPlay = await loadRomanticMusic();
     }
     
-    if (audioRef.current && currentTrack) {
+    if (audioRef.current && trackToPlay) {
       try {
         await audioRef.current.play();
         setIsPlaying(true);
@@ -100,10 +127,14 @@ export default function BackgroundMusic({
   
   const handleSkipTrack = async () => {
     handlePause();
-    await loadRomanticMusic();
-    if (audioRef.current && currentTrack) {
-      audioRef.current.play();
-      setIsPlaying(true);
+    const nextTrack = await loadRomanticMusic();
+    if (audioRef.current && nextTrack) {
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch (err) {
+        console.error('Error playing skipped track:', err);
+      }
     }
   };
   

@@ -15,10 +15,10 @@ export default function ThemeToggle() {
     return (
       <button
         type="button"
-        className="inline-flex h-9 items-center rounded-full border border-neutral-200 px-3 text-xs font-medium text-neutral-600 dark:border-neutral-800 dark:text-neutral-200"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 text-lg text-neutral-600 dark:border-neutral-800 dark:text-neutral-200"
         aria-label="Toggle theme"
       >
-        Theme
+        <span className="opacity-50">☀️</span>
       </button>
     );
   }
@@ -29,10 +29,10 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="inline-flex h-9 items-center rounded-full border border-neutral-200 px-3 text-xs font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-800"
-      aria-label="Toggle theme"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 text-lg text-neutral-700 hover:bg-neutral-100 transition-colors dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-800"
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
-      {isDark ? 'Light mode' : 'Dark mode'}
+      {isDark ? '☀️' : '🌙'}
     </button>
   );
 }

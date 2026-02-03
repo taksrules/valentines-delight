@@ -5,15 +5,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { MemoryPhoto } from '../app/types';
 import AnimatedText from './ui/AnimatedText';
+import { getOccasionTheme, getGradientClasses } from '@/lib/occasion-themes';
 
 interface MemoryRevealProps {
   photos: MemoryPhoto[];
+  occasionType: string;
   onComplete: () => void;
 }
 
-export default function MemoryReveal({ photos, onComplete }: MemoryRevealProps) {
+export default function MemoryReveal({ photos, occasionType, onComplete }: MemoryRevealProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [allRevealed, setAllRevealed] = useState(false);
+  const gradientClasses = getGradientClasses(occasionType);
   
   useEffect(() => {
     if (currentPhotoIndex < photos.length) {
@@ -29,7 +32,7 @@ export default function MemoryReveal({ photos, onComplete }: MemoryRevealProps) 
   }, [currentPhotoIndex, photos.length, allRevealed, onComplete]);
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative z-10 bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
+    <div className={`min-h-screen flex items-center justify-center p-6 relative z-10 ${gradientClasses}`}>
       <motion.div 
         className="max-w-4xl w-full"
         initial={{ opacity: 0 }}

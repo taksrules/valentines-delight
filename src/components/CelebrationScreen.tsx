@@ -6,25 +6,29 @@ import Image from 'next/image';
 import confetti from 'canvas-confetti';
 import AnimatedText from './ui/AnimatedText';
 import Button from './ui/Button';
-import { valentineConfig, formatMessage } from '../app/config';
+import { getOccasionTheme, formatMessage, getGradientClasses } from '@/lib/occasion-themes';
+import { MemoryPhoto } from '../app/types';
 
 interface CelebrationScreenProps {
+  recipientName: string;
+  creatorName: string | null;
+  occasionType: string;
+  photos: MemoryPhoto[];
   retryCount: number;
   onReplay?: () => void;
 }
 
-export default function CelebrationScreen({ retryCount, onReplay }: CelebrationScreenProps) {
+export default function CelebrationScreen({ recipientName, creatorName, occasionType, photos, retryCount, onReplay }: CelebrationScreenProps) {
   const [showButtons, setShowButtons] = useState(false);
   const [showPhotos, setShowPhotos] = useState(false);
+  const theme = getOccasionTheme(occasionType);
+  const gradientClasses = getGradientClasses(occasionType);
   
   const isFirstTime = retryCount === 0;
   
   const message = isFirstTime 
-    ? valentineConfig.customMessages.firstYes
-    : formatMessage(
-        valentineConfig.customMessages.retryYes,
-        { retryCount: String(retryCount + 1) }
-      );
+    ? theme.celebrationMessage
+    : theme.retryMessage;
   
   useEffect(() => {
     // Trigger confetti
@@ -65,7 +69,7 @@ export default function CelebrationScreen({ retryCount, onReplay }: CelebrationS
   }, [isFirstTime]);
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative z-10 bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
+    <div className={`min-h-screen flex items-center justify-center p-6 relative z-10 ${gradientClasses}`}>
       <motion.div 
         className="max-w-4xl w-full text-center space-y-8"
         initial={{ opacity: 0, scale: 0.9 }}
@@ -148,7 +152,7 @@ export default function CelebrationScreen({ retryCount, onReplay }: CelebrationS
             </h3>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {valentineConfig.memoryPhotos.map((photo, index) => (
+              {photos.map((photo: MemoryPhoto, index: number) => (
                 <motion.div
                   key={photo.id}
                   initial={{ opacity: 0, scale: 0.8, rotate: -10 }}

@@ -3,21 +3,26 @@
 import { motion } from 'framer-motion';
 import AnimatedText from './ui/AnimatedText';
 import Button from './ui/Button';
-import { valentineConfig } from '../app/config';
+import { getOccasionTheme, getGradientClasses } from '@/lib/occasion-themes';
 
 interface BigQuestionProps {
+  questionText: string;
+  occasionType: string;
   onYes: () => void;
   onNo: () => void;
   retryCount: number;
 }
 
-export default function BigQuestion({ onYes, onNo, retryCount }: BigQuestionProps) {
+export default function BigQuestion({ questionText, occasionType, onYes, onNo, retryCount }: BigQuestionProps) {
+  const theme = getOccasionTheme(occasionType);
+  const gradientClasses = getGradientClasses(occasionType);
+  
   const subtext = retryCount > 0 
     ? `We've been through this ${retryCount} time${retryCount > 1 ? 's' : ''} already...`
     : 'After everything we\'ve shared...';
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative z-10 bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
+    <div className={`min-h-screen flex items-center justify-center p-6 relative z-10 ${gradientClasses}`}>
       <motion.div 
         className="max-w-2xl w-full text-center space-y-12"
         initial={{ opacity: 0 }}
@@ -59,7 +64,7 @@ export default function BigQuestion({ onYes, onNo, retryCount }: BigQuestionProp
         
         <AnimatedText delay={0.8}>
           <h1 className="text-5xl md:text-7xl mb-8 text-neutral-800 dark:text-neutral-100">
-            {valentineConfig.customMessages.bigQuestion}
+            {questionText}
           </h1>
         </AnimatedText>
         

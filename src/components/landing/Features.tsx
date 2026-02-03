@@ -2,35 +2,36 @@
 
 import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';
+import Image from 'next/image';
 
 const features = [
   {
-    icon: '💕',
+    icon: '/images/icon-emotional.png',
     title: 'Emotionally Intelligent',
     description: 'Gentle pacing and thoughtful transitions create a truly moving experience'
   },
   {
-    icon: '🎵',
+    icon: '/images/icon-music.png',
     title: 'Background Music',
     description: 'Romantic tracks that set the perfect mood'
   },
   {
-    icon: '📸',
+    icon: '/images/icon-photos.png',
     title: 'Photo Memories',
     description: 'Polaroid-style reveals with captions that tell your story'
   },
   {
-    icon: '🎨',
+    icon: '/images/icon-templates.png',
     title: 'Beautiful Templates',
     description: 'Pre-designed romantic journeys you can customize'
   },
   {
-    icon: '🔒',
+    icon: '/images/icon-security.png',
     title: 'Private & Secure',
     description: 'Only you and your recipient can see your journey'
   },
   {
-    icon: '✨',
+    icon: '/images/icon-loop.png',
     title: 'The "No" Loop',
     description: 'Playful retry logic that\'s never pushy'
   }
@@ -48,10 +49,10 @@ export default function Features() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12 sm:mb-16"
         >
-          <h2 className="font-romantic text-3xl sm:text-4xl md:text-5xl text-rose-500 mb-4 tracking-tight dark:text-neutral-100">
+          <h2 className="font-romantic text-3xl sm:text-4xl md:text-5xl text-rose-500 mb-4 tracking-tight dark:text-rose-400">
             Why People Love It
           </h2>
-          <p className="text-lg sm:text-xl text-neutral-700 max-w-2xl mx-auto dark:text-neutral-200">
+          <p className="text-lg sm:text-xl text-neutral-600 max-w-2xl mx-auto dark:text-neutral-300">
             Every detail designed to make your moment unforgettable
           </p>
         </motion.div>
@@ -65,18 +66,26 @@ export default function Features() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.05, duration: 0.5 }}
-              className="bg-white rounded-2xl p-6 border border-neutral-200 hover:border-rose-200 hover:shadow-lg transition-all h-full flex flex-col dark:bg-neutral-900 dark:border-neutral-800 dark:shadow-neutral-900/50 dark:hover:border-neutral-700"
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              className="bg-white rounded-2xl p-6 border border-neutral-200 hover:border-rose-300 hover:shadow-xl transition-all duration-300 h-full flex flex-col dark:bg-neutral-900 dark:border-neutral-800 dark:shadow-neutral-900/50 dark:hover:border-rose-400/40 dark:hover:shadow-2xl"
             >
               {/* Icon */}
-              <div className="text-4xl mb-4">{feature.icon}</div>
+              <div className="relative w-16 h-16 mb-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 p-3 flex items-center justify-center">
+                <Image
+                  src={feature.icon}
+                  alt={feature.title}
+                  fill
+                  className="object-contain p-2"
+                />
+              </div>
 
               {/* Title */}
-              <h3 className="text-lg font-semibold text-neutral-800 mb-2 dark:text-neutral-100">
+              <h3 className="text-lg font-bold text-neutral-900 mb-2 dark:text-neutral-100">
                 {feature.title}
               </h3>
 
               {/* Description */}
-              <p className="text-neutral-600 text-sm leading-relaxed flex-1 dark:text-neutral-200">
+              <p className="text-neutral-700 text-sm leading-relaxed flex-1 dark:text-neutral-300">
                 {feature.description}
               </p>
             </motion.div>

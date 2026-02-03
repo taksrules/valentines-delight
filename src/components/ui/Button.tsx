@@ -26,7 +26,7 @@ export default function Button({
   
   const variantStyles = {
     primary: 'bg-rose-500 text-white hover:bg-rose-600 focus:ring-rose-500 shadow-lg hover:shadow-xl dark:bg-rose-400 dark:text-neutral-950 dark:hover:bg-rose-500 dark:shadow-rose-900/30 dark:focus:ring-rose-300',
-    secondary: 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300 focus:ring-neutral-400 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700 dark:focus:ring-neutral-500'
+    secondary: 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300 focus:ring-neutral-400 dark:bg-transparent dark:border dark:border-rose-400/40 dark:text-rose-400 dark:hover:bg-rose-400/10 dark:focus:ring-rose-300'
   };
   
   const widthStyle = fullWidth ? 'w-full' : '';

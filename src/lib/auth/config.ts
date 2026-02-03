@@ -33,11 +33,17 @@ export const authConfig: NextAuthConfig = {
           return null;
         }
 
+        // Check if email is verified
+        if (!user.emailVerified) {
+          throw new Error("EmailNotVerified");
+        }
+
         return {
           id: user.id,
           email: user.email,
-          name: user.name,
-        };
+          name: user.name ?? undefined,
+          emailVerified: user.emailVerified,
+        } as any;
       },
     }),
   ],
@@ -51,13 +57,13 @@ export const authConfig: NextAuthConfig = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.id = user.id as string;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        (session.user as any).id = token.id as string;
       }
       return session;
     },
