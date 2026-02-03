@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Providers from "@/components/Providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,8 +17,20 @@ export const metadata: Metadata = {
   title: "The Valentine Journey 💕",
   description: "An interactive and romantic journey through our most beautiful memories.",
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/images/TenderlyFavIcon.png", sizes: "any" },
+      { url: "/images/TenderlyFavIcon.png", sizes: "512x512", type: "image/png" },
+      { url: "/images/TenderlyFavIcon.png", sizes: "192x192", type: "image/png" },
+      { url: "/images/TenderlyFavIcon.png", sizes: "96x96", type: "image/png" },
+      { url: "/images/TenderlyFavIcon.png", sizes: "64x64", type: "image/png" },
+      { url: "/images/TenderlyFavIcon.png", sizes: "32x32", type: "image/png" },
+    ],
+    shortcut: "/images/TenderlyFavIcon.png",
+    apple: [
+      { url: "/images/TenderlyFavIcon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -26,11 +39,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-cream-50 text-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 transition-colors duration-300`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

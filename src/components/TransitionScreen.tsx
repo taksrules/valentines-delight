@@ -15,7 +15,7 @@ export default function TransitionScreen({ onComplete }: TransitionScreenProps) 
   const transitionText = valentineConfig.customMessages.transition;
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-6 relative z-10 bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
       <motion.div 
         className="max-w-2xl w-full text-center"
         initial={{ opacity: 0 }}
@@ -24,7 +24,7 @@ export default function TransitionScreen({ onComplete }: TransitionScreenProps) 
       >
         {/* Dimmed background effect */}
         <motion.div
-          className="fixed inset-0 bg-black/10 backdrop-blur-sm -z-10"
+          className="fixed inset-0 bg-black/10 dark:bg-black/30 backdrop-blur-sm -z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5 }}
@@ -34,7 +34,7 @@ export default function TransitionScreen({ onComplete }: TransitionScreenProps) 
           delay={0.5} 
           typewriter={true}
           onComplete={() => setTimeout(() => setShowButton(true), 1000)}
-          className="text-2xl md:text-3xl whitespace-pre-line leading-relaxed"
+          className="text-2xl md:text-3xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200"
         >
           {transitionText}
         </AnimatedText>
@@ -48,7 +48,7 @@ export default function TransitionScreen({ onComplete }: TransitionScreenProps) 
           >
             <motion.button
               onClick={onComplete}
-              className="text-rose-500 text-xl hover:text-rose-600 transition-colors"
+              className="text-rose-500 dark:text-rose-300 text-xl hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
               animate={{ 
                 scale: [1, 1.05, 1],
               }}

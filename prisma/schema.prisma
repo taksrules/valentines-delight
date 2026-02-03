@@ -1,0 +1,671 @@
+// =====================================================================
+// EMOTIONAL MOMENTS PLATFORM - COMPLETE DATABASE SCHEMA
+// =====================================================================
+// This schema supports the full vision (Phase 1-4)
+// Phase markers indicate when features are activated
+// All tables are created from day one to avoid future migrations
+// =====================================================================
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+// =====================================================================
+// AUTHENTICATION & USER MANAGEMENT (Phase 1)
+// =====================================================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  emailVerified    DateTime?
+  name             String?
+  image            String? // Avatar URL
+  passwordHash     String?   // Bcrypt hashed password for credentials auth
+  
+  // Subscription & Billing (Phase 1)
+  subscriptionTier String    @default("free") // free | pro | business | enterprise
+  stripeCustomerId String?   @unique
+  
+  // Enterprise Features (Phase 4)
+  organizationId   String? // FK to Organization
+  role             String    @default("user") // user | admin | owner
+  
+  // White-label (Phase 4)
+  whiteLabelId     String? // FK to WhiteLabel
+  
+  // Preferences (Phase 2)
+  preferences      Json      @default("{}") // UI preferences, notification settings
+  
+  // Timestamps
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  lastLoginAt      DateTime?
+  deletedAt        DateTime? // Soft delete
+  
+  // Relations
+  accounts         Account[]
+  sessions         Session[]
+  journeys         Journey[]
+  subscriptions    UserSubscription[]
+  templates        Template[] // User-created templates (Phase 3)
+  apiKeys          ApiKey[] // For API access (Phase 4)
+  organization     Organization? @relation(fields: [organizationId], references: [id])
+  whiteLabel       WhiteLabel? @relation(fields: [whiteLabelId], references: [id])
+
+  @@index([email])
+  @@index([subscriptionTier])
+  @@index([organizationId])
+  @@index([whiteLabelId])
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// =====================================================================
+// JOURNEY MANAGEMENT (Phase 1)
+// =====================================================================
+
+model Journey {
+  id                String    @id @default(cuid())
+  creatorId         String
+  creator           User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  
+  // Journey Configuration
+  occasionType      String    // valentine | proposal | anniversary | apology | long_distance | custom
+  recipientName     String
+  creatorName       String?   // Optional sender name
+  uniqueSlug        String    @unique // URL-safe slug (e.g., "emily-valentine-a8f3")
+  
+  // Status & Privacy
+  status            String    @default("draft") // draft | scheduled | published | completed | archived
+  visibility        String    @default("private") // private | unlisted | public (for marketplace)
+  passwordProtected Boolean   @default(false)
+  passwordHash      String?   // Bcrypt hash
+  
+  // Scheduling (Phase 2)
+  scheduledDelivery DateTime?
+  deliveryStatus    String?   // pending | sent | failed (for scheduled deliveries)
+  
+  // Expiration (Phase 2)
+  expiresAt         DateTime?
+  allowReplay       Boolean   @default(true) // Can recipient replay after completion?
+  
+  // Media Configuration
+  musicEnabled      Boolean   @default(true)
+  musicTrackId      String?   // Jamendo track ID
+  musicMood         String?   // romantic | playful | nostalgic
+  
+  // Template Reference (Phase 1)
+  templateId        String?
+  template          Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  
+  // AI Generation Metadata (Phase 3)
+  aiGenerated       Boolean   @default(false)
+  aiPrompt          String?   @db.Text // Original user prompt for AI generation
+  aiModel           String?   // gpt-4, etc.
+  
+  // White-label (Phase 4)
+  whiteLabelId      String?
+  whiteLabel        WhiteLabel? @relation(fields: [whiteLabelId], references: [id])
+  brandingOverride  Json?     // Custom colors, logo, etc.
+  
+  // Engagement Metrics (computed from analytics)
+  viewCount         Int       @default(0)
+  completionCount   Int       @default(0)
+  averageTimeSpent  Int?      // Seconds
+  retryCount        Int       @default(0) // How many times NO was clicked
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  publishedAt       DateTime?
+  completedAt       DateTime? // When YES was clicked
+  deletedAt         DateTime? // Soft delete
+  
+  // Relations
+  questions         JourneyQuestion[]
+  photos            JourneyPhoto[]
+  analytics         JourneyAnalytics[]
+  deliveries        JourneyDelivery[] // Omnichannel deliveries (Phase 4)
+
+  @@index([creatorId])
+  @@index([uniqueSlug])
+  @@index([status])
+  @@index([occasionType])
+  @@index([scheduledDelivery])
+  @@index([whiteLabelId])
+  @@map("journeys")
+}
+
+model JourneyQuestion {
+  id                  String   @id @default(cuid())
+  journeyId           String
+  journey             Journey  @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  questionOrder       Int      // 1, 2, 3, 4...
+  questionText        String   @db.Text
+  
+  // Options
+  option1             String
+  option2             String
+  option3             String
+  option4             String?  // Optional 4th option
+  
+  // Response
+  acknowledgmentText  String   @db.Text // Shown after answer selected
+  
+  // Analytics (computed from journey_analytics)
+  timesAnswered       Int      @default(0)
+  averageTimeToAnswer Int?     // Seconds
+  
+  // AI Generation (Phase 3)
+  aiGenerated         Boolean  @default(false)
+  
+  createdAt           DateTime @default(now())
+
+  @@index([journeyId])
+  @@index([questionOrder])
+  @@map("journey_questions")
+}
+
+model JourneyPhoto {
+  id          String   @id @default(cuid())
+  journeyId   String
+  journey     Journey  @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  photoOrder  Int      // 1, 2, 3, 4...
+  imageUrl    String   // Supabase Storage path
+  caption     String
+  
+  // Image Metadata
+  width       Int?
+  height      Int?
+  fileSize    Int?     // Bytes
+  mimeType    String?  // image/jpeg, etc.
+  
+  // AI Generation (Phase 3)
+  aiCaption   Boolean  @default(false) // Caption generated by AI
+  
+  // Engagement (computed from analytics)
+  viewDuration Int?    // Average seconds spent viewing this photo
+  
+  createdAt   DateTime @default(now())
+
+  @@index([journeyId])
+  @@index([photoOrder])
+  @@map("journey_photos")
+}
+
+// =====================================================================
+// ANALYTICS & TELEMETRY (Phase 1)
+// =====================================================================
+
+model JourneyAnalytics {
+  id          String   @id @default(cuid())
+  journeyId   String
+  journey     Journey  @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  // Event Classification
+  eventType   String   // viewed | question_answered | photo_viewed | no_clicked | yes_clicked | completed | music_played | music_skipped
+  eventData   Json?    // Additional context (question_id, photo_id, duration, etc.)
+  
+  // Session Tracking
+  sessionId   String   // Random UUID per recipient visit
+  fingerprint String?  // Browser fingerprint (privacy-conscious)
+  
+  // Privacy-Conscious Metadata
+  // NOTE: No IP addresses, no device IDs, no PII
+  timezone    String?
+  language    String?
+  
+  timestamp   DateTime @default(now())
+
+  @@index([journeyId])
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([timestamp])
+  @@map("journey_analytics")
+}
+
+// =====================================================================
+// TEMPLATE SYSTEM (Phase 1-3)
+// =====================================================================
+
+model Template {
+  id                String   @id @default(cuid())
+  
+  // Categorization
+  occasionType      String   // valentine | proposal | anniversary | apology | custom
+  name              String
+  description       String   @db.Text
+  thumbnailUrl      String?
+  
+  // Visibility & Access
+  visibility        String   @default("private") // private | public | marketplace
+  isPremium         Boolean  @default(false) // Requires pro subscription
+  isOfficial        Boolean  @default(false) // Platform-created vs user-created
+  
+  // Creator (null for platform templates)
+  creatorId         String?
+  creator           User?    @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  
+  // Template Content (JSONB for flexibility)
+  defaultQuestions  Json     // Array of question objects
+  defaultCaptions   Json     // Array of caption strings
+  copyConfig        Json     // All text snippets (welcome, transitions, outcomes)
+  styleConfig       Json?    // Custom colors, fonts (Phase 3)
+  
+  // Marketplace (Phase 3)
+  price             Decimal? @db.Decimal(10, 2) // Null for free templates
+  commission        Decimal? @db.Decimal(5, 2) // Platform commission percentage
+  
+  // Engagement Metrics
+  usageCount        Int      @default(0)
+  rating            Decimal? @db.Decimal(3, 2) // 1.00 to 5.00
+  reviewCount       Int      @default(0)
+  
+  // AI Generation (Phase 3)
+  aiGenerated       Boolean  @default(false)
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  publishedAt       DateTime?
+  deletedAt         DateTime? // Soft delete
+  
+  // Relations
+  journeys          Journey[]
+  reviews           TemplateReview[] // Phase 3
+
+  @@index([occasionType])
+  @@index([visibility])
+  @@index([isPremium])
+  @@index([isOfficial])
+  @@index([creatorId])
+  @@map("templates")
+}
+
+model TemplateReview {
+  id         String   @id @default(cuid())
+  templateId String
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  userId     String
+  
+  rating     Int      // 1-5 stars
+  review     String?  @db.Text
+  
+  createdAt  DateTime @default(now())
+
+  @@unique([templateId, userId]) // One review per user per template
+  @@index([templateId])
+  @@map("template_reviews")
+}
+
+// =====================================================================
+// QUESTION BANK (Phase 1)
+// =====================================================================
+
+model QuestionBank {
+  id                  String   @id @default(cuid())
+  
+  // Categorization
+  occasionType        String   // valentine | proposal | anniversary | etc.
+  category            String?  // memories | future | feelings | playful
+  
+  // Question Content
+  questionText        String   @db.Text
+  option1             String
+  option2             String
+  option3             String
+  option4             String?
+  acknowledgmentText  String   @db.Text
+  
+  // Access Control
+  isPremium           Boolean  @default(false) // AI-generated questions
+  
+  // Engagement Metrics
+  usageCount          Int      @default(0)
+  
+  // AI Generation (Phase 3)
+  aiGenerated         Boolean  @default(false)
+  
+  createdAt           DateTime @default(now())
+
+  @@index([occasionType])
+  @@index([category])
+  @@index([isPremium])
+  @@map("question_bank")
+}
+
+// =====================================================================
+// SUBSCRIPTION & BILLING (Phase 2)
+// =====================================================================
+
+model SubscriptionPlan {
+  id                String   @id @default(cuid())
+  
+  // Plan Details
+  name              String   @unique // free | pro | business | enterprise
+  displayName       String
+  description       String   @db.Text
+  
+  // Pricing
+  priceMonthly      Decimal  @db.Decimal(10, 2)
+  priceYearly       Decimal? @db.Decimal(10, 2) // Annual discount
+  
+  // Limits
+  journeysPerMonth  Int      // -1 for unlimited
+  maxPhotos         Int      // Per journey
+  maxStorageGB      Int      // Total storage
+  
+  // Features (JSONB array)
+  features          Json     // ["password_protection", "scheduled_delivery", "ai_generation", etc.]
+  
+  // Stripe Integration
+  stripePriceIdMonthly String? @unique
+  stripePriceIdYearly  String? @unique
+  
+  // Status
+  isActive          Boolean  @default(true)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  subscriptions     UserSubscription[]
+
+  @@map("subscription_plans")
+}
+
+model UserSubscription {
+  id                    String   @id @default(cuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  planId                String
+  plan                  SubscriptionPlan @relation(fields: [planId], references: [id])
+  
+  // Status
+  status                String   // active | canceled | past_due | trialing | paused
+  
+  // Billing Period
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  cancelAtPeriodEnd     Boolean  @default(false)
+  
+  // Usage Tracking
+  journeysThisPeriod    Int      @default(0)
+  storageUsedGB         Decimal  @default(0) @db.Decimal(10, 4)
+  
+  // Stripe Integration
+  stripeSubscriptionId  String?  @unique
+  
+  // Timestamps
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  canceledAt            DateTime?
+
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+  @@map("user_subscriptions")
+}
+
+// =====================================================================
+// OMNICHANNEL DELIVERY (Phase 4)
+// =====================================================================
+
+model JourneyDelivery {
+  id               String   @id @default(cuid())
+  journeyId        String
+  journey          Journey  @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  // Channel Configuration
+  channel          String   // web | email | sms | whatsapp
+  recipientContact String   // Email or phone number
+  
+  // Delivery Status
+  status           String   @default("pending") // pending | sent | delivered | failed | opened | completed
+  
+  // Message Content (channel-specific)
+  messageTemplate  String?  // Template used for email/SMS
+  messageContent   String?  @db.Text // Actual message sent
+  
+  // Delivery Metadata
+  sentAt           DateTime?
+  deliveredAt      DateTime?
+  openedAt         DateTime?
+  completedAt      DateTime? // When YES was clicked
+  
+  // Error Handling
+  errorMessage     String?  @db.Text
+  retryCount       Int      @default(0)
+  
+  // Provider Metadata
+  providerMessageId String? // Twilio SID, WhatsApp message ID, etc.
+  
+  createdAt        DateTime @default(now())
+
+  @@index([journeyId])
+  @@index([channel])
+  @@index([status])
+  @@map("journey_deliveries")
+}
+
+// =====================================================================
+// WHITE-LABEL B2B (Phase 4)
+// =====================================================================
+
+model WhiteLabel {
+  id                String   @id @default(cuid())
+  
+  // Organization Details
+  organizationName  String
+  organizationId    String   @unique // FK to Organization
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Custom Domain
+  customDomain      String?  @unique // e.g., love.jewelrystore.com
+  domainVerified    Boolean  @default(false)
+  
+  // Branding Configuration (JSONB)
+  branding          Json     // { logo, colors, fonts, emailTemplates, etc. }
+  
+  // Features
+  allowTemplateMarketplace Boolean @default(true)
+  allowAIFeatures          Boolean @default(true)
+  
+  // Billing
+  subscriptionTier  String   // business | enterprise
+  
+  // Status
+  isActive          Boolean  @default(true)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  users             User[]
+  journeys          Journey[]
+
+  @@index([organizationId])
+  @@index([customDomain])
+  @@map("white_labels")
+}
+
+// =====================================================================
+// ORGANIZATIONS (Phase 4)
+// =====================================================================
+
+model Organization {
+  id                String   @id @default(cuid())
+  
+  // Organization Details
+  name              String
+  slug              String   @unique // URL-safe identifier
+  
+  // Billing
+  stripeCustomerId  String?  @unique
+  subscriptionTier  String   @default("business") // business | enterprise
+  
+  // Enterprise Features
+  ssoEnabled        Boolean  @default(false)
+  ssoProvider       String?  // google | microsoft | okta
+  samlMetadataUrl   String?
+  
+  // Limits & Usage
+  maxUsers          Int      @default(10)
+  currentUserCount  Int      @default(0)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  users             User[]
+  whiteLabels       WhiteLabel[]
+  apiKeys           ApiKey[]
+
+  @@index([slug])
+  @@map("organizations")
+}
+
+// =====================================================================
+// API ACCESS (Phase 4)
+// =====================================================================
+
+model ApiKey {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // Key Details
+  name           String   // User-defined name for the key
+  key            String   @unique // API key (hashed)
+  keyPrefix      String   // First 8 chars for identification
+  
+  // Permissions
+  scopes         Json     // Array of permission scopes
+  
+  // Rate Limiting
+  rateLimit      Int      @default(1000) // Requests per hour
+  
+  // Status
+  isActive       Boolean  @default(true)
+  
+  // Usage Tracking
+  lastUsedAt     DateTime?
+  totalRequests  Int      @default(0)
+  
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime?
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([key])
+  @@map("api_keys")
+}
+
+// =====================================================================
+// SYSTEM ADMINISTRATION (Phase 3-4)
+// =====================================================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  
+  // Actor
+  userId      String?
+  userEmail   String?
+  
+  // Action
+  action      String   // user.created, journey.published, template.approved, etc.
+  resourceType String  // user | journey | template | organization
+  resourceId  String
+  
+  // Changes (JSONB)
+  changes     Json?    // Before/after values
+  
+  // Context
+  ipAddress   String?  // For security audits only
+  userAgent   String?
+  
+  timestamp   DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resourceType, resourceId])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  
+  // Flag Details
+  key         String   @unique // ai_generation_enabled, template_marketplace_live
+  name        String
+  description String   @db.Text
+  
+  // Status
+  isEnabled   Boolean  @default(false)
+  
+  // Rollout Strategy
+  rolloutPercent Int    @default(0) // 0-100, for gradual rollout
+  
+  // Targeting (JSONB)
+  targeting   Json?    // { users: [], organizations: [], tiers: [] }
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@map("feature_flags")
+}

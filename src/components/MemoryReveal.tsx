@@ -29,7 +29,7 @@ export default function MemoryReveal({ photos, onComplete }: MemoryRevealProps) 
   }, [currentPhotoIndex, photos.length, allRevealed, onComplete]);
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-6 relative z-10 bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
       <motion.div 
         className="max-w-4xl w-full"
         initial={{ opacity: 0 }}
@@ -37,10 +37,10 @@ export default function MemoryReveal({ photos, onComplete }: MemoryRevealProps) 
         transition={{ duration: 1 }}
       >
         <AnimatedText delay={0.3} className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl mb-4">
+          <h2 className="text-3xl md:text-4xl mb-4 text-neutral-800 dark:text-neutral-100">
             Remember these moments? 💭
           </h2>
-          <p className="text-xl text-neutral-600">
+          <p className="text-xl text-neutral-600 dark:text-neutral-200">
             Each one special in its own way...
           </p>
         </AnimatedText>
@@ -63,8 +63,8 @@ export default function MemoryReveal({ photos, onComplete }: MemoryRevealProps) 
                 }}
               >
                 {/* Polaroid-style frame */}
-                <div className="bg-white p-4 shadow-2xl rounded-lg transform hover:scale-105 transition-transform duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-rose-100 to-pink-100 rounded overflow-hidden mb-4 relative">
+                <div className="bg-white dark:bg-neutral-900 p-4 shadow-2xl rounded-lg transform hover:scale-105 transition-transform duration-300 dark:shadow-neutral-900/50">
+                  <div className="aspect-square bg-gradient-to-br from-rose-100 to-pink-100 dark:from-neutral-800 dark:to-neutral-800 rounded overflow-hidden mb-4 relative">
                     <Image
                       src={photo.url}
                       alt={photo.caption}
@@ -73,7 +73,7 @@ export default function MemoryReveal({ photos, onComplete }: MemoryRevealProps) 
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
                   </div>
-                  <p className="text-center font-romantic text-xl text-neutral-700">
+                  <p className="text-center font-romantic text-xl text-neutral-700 dark:text-neutral-200">
                     {photo.caption}
                   </p>
                 </div>
@@ -89,7 +89,7 @@ export default function MemoryReveal({ photos, onComplete }: MemoryRevealProps) 
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <p className="text-2xl text-rose-500 font-romantic">
+            <p className="text-2xl text-rose-500 dark:text-rose-300 font-romantic">
               So many beautiful memories together... ✨
             </p>
           </motion.div>

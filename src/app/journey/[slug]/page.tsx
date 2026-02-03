@@ -1,15 +1,15 @@
 'use client';
 
 import { AnimatePresence } from 'framer-motion';
-import { useJourneyState } from '../hooks/useJourneyState';
-import { valentineConfig } from './config';
-import WelcomeScreen from '../components/WelcomeScreen';
-import MemoryQuestion from '../components/MemoryQuestion';
-import MemoryReveal from '../components/MemoryReveal';
-import TransitionScreen from '../components/TransitionScreen';
-import BigQuestion from '../components/BigQuestion';
-import CelebrationScreen from '../components/CelebrationScreen';
-import BackgroundMusic from '../components/BackgroundMusic';
+import { useJourneyState } from '@/hooks/useJourneyState';
+import { valentineConfig } from '@/app/config';
+import WelcomeScreen from '@/components/WelcomeScreen';
+import MemoryQuestion from '@/components/MemoryQuestion';
+import MemoryReveal from '@/components/MemoryReveal';
+import TransitionScreen from '@/components/TransitionScreen';
+import BigQuestion from '@/components/BigQuestion';
+import CelebrationScreen from '@/components/CelebrationScreen';
+import BackgroundMusic from '@/components/BackgroundMusic';
 
 export default function Home() {
   const { state, goToScreen, nextQuestion, saveAnswer, handleNo, handleYes, reset } = useJourneyState();

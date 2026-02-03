@@ -17,7 +17,7 @@ export default function BigQuestion({ onYes, onNo, retryCount }: BigQuestionProp
     : 'After everything we\'ve shared...';
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-6 relative z-10 bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
       <motion.div 
         className="max-w-2xl w-full text-center space-y-12"
         initial={{ opacity: 0 }}
@@ -29,7 +29,7 @@ export default function BigQuestion({ onYes, onNo, retryCount }: BigQuestionProp
           {[...Array(8)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute text-3xl opacity-10"
+              className="absolute text-3xl opacity-10 dark:opacity-20"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`
@@ -52,13 +52,13 @@ export default function BigQuestion({ onYes, onNo, retryCount }: BigQuestionProp
         </div>
         
         <AnimatedText delay={0.3} className="mb-6">
-          <p className="text-lg md:text-xl text-neutral-600 italic">
+          <p className="text-lg md:text-xl text-neutral-600 dark:text-neutral-200 italic">
             {subtext}
           </p>
         </AnimatedText>
         
         <AnimatedText delay={0.8}>
-          <h1 className="text-5xl md:text-7xl mb-8">
+          <h1 className="text-5xl md:text-7xl mb-8 text-neutral-800 dark:text-neutral-100">
             {valentineConfig.customMessages.bigQuestion}
           </h1>
         </AnimatedText>
@@ -88,7 +88,7 @@ export default function BigQuestion({ onYes, onNo, retryCount }: BigQuestionProp
         
         {retryCount > 0 && (
           <motion.p
-            className="text-sm text-neutral-400 mt-8"
+            className="text-sm text-neutral-400 dark:text-neutral-400 mt-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 2 }}

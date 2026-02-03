@@ -65,7 +65,7 @@ export default function CelebrationScreen({ retryCount, onReplay }: CelebrationS
   }, [isFirstTime]);
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-6 relative z-10 bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
       <motion.div 
         className="max-w-4xl w-full text-center space-y-8"
         initial={{ opacity: 0, scale: 0.9 }}
@@ -116,20 +116,20 @@ export default function CelebrationScreen({ retryCount, onReplay }: CelebrationS
         </motion.div>
         
         <AnimatedText delay={0.5} duration={1}>
-          <h2 className="text-4xl md:text-5xl mb-6">
+          <h2 className="text-4xl md:text-5xl mb-6 text-neutral-800 dark:text-neutral-100">
             You said YES!
           </h2>
         </AnimatedText>
         
         <AnimatedText delay={1.2} duration={1}>
-          <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed">
+          <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200">
             {message}
           </p>
         </AnimatedText>
         
         {!isFirstTime && retryCount > 0 && (
           <AnimatedText delay={2} duration={0.8}>
-            <p className="text-lg text-rose-400 italic">
+            <p className="text-lg text-rose-400 dark:text-rose-300 italic">
               (Worth the wait! 😊)
             </p>
           </AnimatedText>
@@ -143,7 +143,7 @@ export default function CelebrationScreen({ retryCount, onReplay }: CelebrationS
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1 }}
           >
-            <h3 className="text-2xl md:text-3xl font-romantic text-rose-500 mb-8">
+            <h3 className="text-2xl md:text-3xl font-romantic text-rose-500 dark:text-rose-300 mb-8">
               Our Beautiful Memories Together 💕
             </h3>
             
@@ -171,8 +171,8 @@ export default function CelebrationScreen({ retryCount, onReplay }: CelebrationS
                   className="relative"
                 >
                   {/* Polaroid frame */}
-                  <div className="bg-white p-3 shadow-xl rounded-lg">
-                    <div className="aspect-square bg-gradient-to-br from-rose-100 to-pink-100 rounded overflow-hidden mb-2 relative">
+                  <div className="bg-white dark:bg-neutral-900 p-3 shadow-xl rounded-lg dark:shadow-neutral-900/50">
+                    <div className="aspect-square bg-gradient-to-br from-rose-100 to-pink-100 dark:from-neutral-800 dark:to-neutral-800 rounded overflow-hidden mb-2 relative">
                       <Image
                         src={photo.url}
                         alt={photo.caption}
@@ -181,7 +181,7 @@ export default function CelebrationScreen({ retryCount, onReplay }: CelebrationS
                         sizes="(max-width: 768px) 50vw, 25vw"
                       />
                     </div>
-                    <p className="text-xs md:text-sm font-romantic text-neutral-700 text-center">
+                    <p className="text-xs md:text-sm font-romantic text-neutral-700 dark:text-neutral-200 text-center">
                       {photo.caption}
                     </p>
                   </div>
@@ -190,7 +190,7 @@ export default function CelebrationScreen({ retryCount, onReplay }: CelebrationS
             </div>
             
             <motion.p
-              className="text-lg text-rose-400 italic mt-8"
+              className="text-lg text-rose-400 dark:text-rose-300 italic mt-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5 }}

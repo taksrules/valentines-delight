@@ -24,7 +24,7 @@ export default function WelcomeScreen({ onStart, retryCount }: WelcomeScreenProp
     : null;
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-6 relative z-10 bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
       <motion.div 
         className="max-w-2xl w-full text-center space-y-8"
         initial={{ opacity: 0 }}
@@ -36,7 +36,7 @@ export default function WelcomeScreen({ onStart, retryCount }: WelcomeScreenProp
           {[...Array(5)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute text-4xl opacity-20"
+              className="absolute text-4xl opacity-20 dark:opacity-30"
               style={{
                 left: `${20 + i * 20}%`,
                 top: `${10 + i * 15}%`
@@ -68,7 +68,7 @@ export default function WelcomeScreen({ onStart, retryCount }: WelcomeScreenProp
           onComplete={() => setTimeout(() => setShowButton(true), 500)}
         >
           <div className="space-y-4">
-            <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed">
+            <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200">
               {retryMessage || welcomeMessage}
             </p>
           </div>

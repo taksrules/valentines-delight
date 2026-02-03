@@ -37,7 +37,7 @@ export default function MemoryQuestion({
   };
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-6 relative z-10 bg-gradient-to-br from-cream-50 via-rose-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900">
       <motion.div 
         className="max-w-3xl w-full space-y-8"
         initial={{ opacity: 0 }}
@@ -52,13 +52,13 @@ export default function MemoryQuestion({
         />
         
         <AnimatedText delay={0.3} className="text-center">
-          <p className="text-xl md:text-2xl text-rose-400 italic mb-4">
+          <p className="text-xl md:text-2xl text-rose-400 dark:text-rose-300 italic mb-4">
             {question.prompt}
           </p>
         </AnimatedText>
         
         <AnimatedText delay={0.6} className="text-center">
-          <h2 className="text-3xl md:text-4xl mb-8">
+          <h2 className="text-3xl md:text-4xl mb-8 text-neutral-800 dark:text-neutral-100">
             {question.question}
           </h2>
         </AnimatedText>
@@ -73,7 +73,7 @@ export default function MemoryQuestion({
             {question.answers.map((answer, index) => (
               <motion.button
                 key={index}
-                className="p-6 rounded-2xl bg-white/50 backdrop-blur-sm border-2 border-rose-200 hover:border-rose-400 hover:bg-rose-50/50 transition-all duration-300 text-left text-lg"
+                className="p-6 rounded-2xl bg-white/50 backdrop-blur-sm border-2 border-rose-200 hover:border-rose-400 hover:bg-rose-50/50 transition-all duration-300 text-left text-lg dark:bg-neutral-900 dark:border-neutral-800 dark:hover:border-neutral-700 dark:text-neutral-100"
                 onClick={() => handleAnswerSelect(answer)}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -81,7 +81,7 @@ export default function MemoryQuestion({
                 whileHover={{ scale: 1.02, x: 10 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <span className="text-rose-400 mr-3">❤️</span>
+                <span className="text-rose-400 dark:text-rose-300 mr-3">❤️</span>
                 {answer}
               </motion.button>
             ))}
@@ -95,7 +95,7 @@ export default function MemoryQuestion({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <p className="text-2xl md:text-3xl text-rose-500 font-romantic">
+            <p className="text-2xl md:text-3xl text-rose-500 dark:text-rose-300 font-romantic">
               {question.acknowledgment}
             </p>
             
