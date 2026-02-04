@@ -46,6 +46,9 @@ interface BuilderState {
   musicEnabled: boolean;
   musicMood: string;
   uniqueSlug: string;
+  referralCode: string;
+  allowSharing: boolean;
+  successPhoto: Photo | null;
 
   // Actions
   setJourneyId: (id: string) => void;
@@ -67,6 +70,8 @@ interface BuilderState {
   setMusicEnabled: (enabled: boolean) => void;
   setMusicMood: (mood: string) => void;
   setUniqueSlug: (slug: string) => void;
+  setSuccessPhoto: (photo: Photo | null) => void;
+  setAllowSharing: (allow: boolean) => void;
   
   // Save/Load
   saveProgress: () => Promise<void>;
@@ -89,6 +94,9 @@ const initialState = {
   musicEnabled: true,
   musicMood: 'romantic',
   uniqueSlug: '',
+  referralCode: '',
+  allowSharing: true,
+  successPhoto: null,
 };
 
 export const useBuilderStore = create<BuilderState>((set, get) => ({
@@ -161,6 +169,8 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   setMusicEnabled: (enabled) => set({ musicEnabled: enabled }),
   setMusicMood: (mood) => set({ musicMood: mood }),
   setUniqueSlug: (slug) => set({ uniqueSlug: slug }),
+  setSuccessPhoto: (photo) => set({ successPhoto: photo }),
+  setAllowSharing: (allow) => set({ allowSharing: allow }),
 
   saveProgress: async () => {
     const state = get();
@@ -173,6 +183,8 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         creatorName: state.creatorName,
         musicEnabled: state.musicEnabled,
         musicMood: state.musicMood,
+        allowSharing: state.allowSharing,
+        successPhotoUrl: state.successPhoto?.imageUrl,
       };
 
       let journeyId = state.journeyId;
@@ -270,6 +282,9 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         questions: data.questions || [],
         photos: data.photos || [],
         uniqueSlug: data.uniqueSlug || '',
+        referralCode: data.referralCode || '',
+        allowSharing: data.allowSharing ?? true,
+        successPhoto: data.successPhotoUrl ? { imageUrl: data.successPhotoUrl, caption: 'Success Photo' } : null,
       });
     } catch (error) {
       console.error('Failed to load journey:', error);

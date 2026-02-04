@@ -121,6 +121,8 @@ model Journey {
   recipientName     String
   creatorName       String?   // Optional sender name
   uniqueSlug        String    @unique // URL-safe slug (e.g., "emily-valentine-a8f3")
+  referralCode      String?   @unique // 8-char code for sharing (Spotify-style)
+  allowSharing      Boolean   @default(true)
   
   // Status & Privacy
   status            String    @default("draft") // draft | scheduled | published | completed | archived
@@ -135,6 +137,7 @@ model Journey {
   // Expiration (Phase 2)
   expiresAt         DateTime?
   allowReplay       Boolean   @default(true) // Can recipient replay after completion?
+  successPhotoUrl   String?   // Photo of the creator displayed at the end
   
   // Media Configuration
   musicEnabled      Boolean   @default(true)
@@ -145,6 +148,7 @@ model Journey {
   // Big Question Configuration (Phase 1)
   includeBigQuestion Boolean  @default(true) // Show final YES/NO question
   bigQuestionText    String?  @db.Text // Custom question (falls back to occasion default)
+  successPhotoUrl    String?  // Photo shown when they say YES (Phase 1 beta feedback)
   
   // Template Reference (Phase 1)
   templateId        String?

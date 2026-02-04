@@ -66,6 +66,7 @@ export async function POST(
       data: {
         status: 'published',
         uniqueSlug: slug,
+        referralCode: journey.referralCode || (await generateReferralCode()),
         publishedAt: new Date(),
       }
     });
@@ -117,4 +118,27 @@ async function generateUniqueSlug(recipientName: string, occasionType: string): 
   // Fallback with timestamp
   const timestamp = Date.now().toString(36);
   return `${baseName}-${occasion}-${timestamp}`;
+}
+
+// Helper function to generate 8-char alphanumeric referral code
+async function generateReferralCode(): Promise<string> {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  
+  // Try 5 times to get a unique code
+  for (let attempt = 0; attempt < 5; attempt++) {
+    result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    const existing = await prisma.journey.findUnique({
+      where: { referralCode: result }
+    });
+    
+    if (!existing) return result;
+  }
+  
+  // Fallback with timestamp short version if multiple collisions
+  return Date.now().toString(36).substring(0, 8);
 }

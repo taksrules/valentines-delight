@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { getOccasionTheme, getGradientClasses, getPrimaryColor } from '@/lib/occasion-themes';
+import ProgressIndicator from '@/components/ui/ProgressIndicator';
 
 interface QuestionSlideProps {
   question: {
@@ -49,9 +50,11 @@ export default function QuestionSlide({
         className="max-w-2xl w-full"
       >
         <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl p-8 md:p-12">
-          <div className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-            Question {questionNumber} of {totalQuestions}
-          </div>
+          <ProgressIndicator 
+            current={questionNumber - 1} 
+            total={totalQuestions} 
+            className="mb-8"
+          />
 
           <h2 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-8">
             {question.questionText}

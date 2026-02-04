@@ -11,7 +11,7 @@ const TEMPLATE_QUESTIONS: Question[] = [
     option2: 'When we first talked',
     option3: 'A random Tuesday',
     option4: 'I always knew',
-    acknowledgmentText: '✨ That moment changed everything for me too',
+    acknowledgmentText: 'That moment changed everything for me too',
   },
   {
     questionText: "What's your favorite memory of us together?",
@@ -19,7 +19,7 @@ const TEMPLATE_QUESTIONS: Question[] = [
     option2: 'A quiet night in',
     option3: 'That inside joke',
     option4: 'Every moment',
-    acknowledgmentText: '💕 I treasure that memory so much',
+    acknowledgmentText: 'I treasure that memory so much',
   },
   {
     questionText: 'What do you love most about our relationship?',
@@ -27,7 +27,7 @@ const TEMPLATE_QUESTIONS: Question[] = [
     option2: 'Our deep conversations',
     option3: 'The little things',
     option4: 'Everything',
-    acknowledgmentText: '🥰 You make every day better',
+    acknowledgmentText: 'You make every day better',
   },
   {
     questionText: 'Where do you see us in the future?',
@@ -35,7 +35,7 @@ const TEMPLATE_QUESTIONS: Question[] = [
     option2: 'Traveling the world',
     option3: 'Growing old together',
     option4: "Wherever we're happy",
-    acknowledgmentText: "🌟 I can't wait for our future together",
+    acknowledgmentText: "I can't wait for our future together",
   },
 ];
 

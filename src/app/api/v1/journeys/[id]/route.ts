@@ -146,11 +146,48 @@ export async function GET(
       })
     );
 
+    // Sign successPhotoUrl if present
+    let signedSuccessPhotoUrl = journey.successPhotoUrl;
+    if (journey.successPhotoUrl && (journey.successPhotoUrl.includes('/storage/v1/object/public/') || journey.successPhotoUrl.includes('/storage/v1/s3/'))) {
+      try {
+        const urlObj = new URL(journey.successPhotoUrl);
+        let bucket = '';
+        let key = '';
+
+        if (journey.successPhotoUrl.includes('/storage/v1/object/public/')) {
+          const parts = urlObj.pathname.split('/public/');
+          if (parts.length > 1) {
+            const fullPath = parts[1];
+            const pathParts = fullPath.split('/');
+            bucket = pathParts[0];
+            key = pathParts.slice(1).join('/');
+          }
+        } else {
+          const s3Match = journey.successPhotoUrl.match(/\/storage\/v1\/s3\/([^/]+)\/(.+?)(?:\?|$)/);
+          if (s3Match) {
+            bucket = s3Match[1];
+            key = s3Match[2];
+          }
+        }
+
+        if (bucket && key) {
+          const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+          const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
+          const { s3Client } = await import('@/lib/s3');
+          const command = new GetObjectCommand({ Bucket: bucket, Key: key });
+          signedSuccessPhotoUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+        }
+      } catch (e) {
+        console.error('[GET journey] Failed to sign success photo URL:', e);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
         ...journey,
         photos: photosWithSignedUrls,
+        successPhotoUrl: signedSuccessPhotoUrl,
       }
     });
   } catch (error) {
@@ -198,7 +235,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { recipientName, creatorName, occasionType, musicEnabled, musicMood } = body;
+    const { recipientName, creatorName, occasionType, musicEnabled, musicMood, successPhotoUrl, allowSharing } = body;
 
     const updated = await prisma.journey.update({
       where: { id },
@@ -208,6 +245,8 @@ export async function PATCH(
         ...(occasionType && { occasionType }),
         ...(musicEnabled !== undefined && { musicEnabled }),
         ...(musicMood && { musicMood }),
+        ...(successPhotoUrl !== undefined && { successPhotoUrl }),
+        ...(allowSharing !== undefined && { allowSharing }),
       }
     });
 

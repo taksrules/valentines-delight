@@ -82,11 +82,46 @@ export default async function JourneyPage({ params }: PageProps) {
     })
   );
 
+  // Sign successPhotoUrl if present
+  let signedSuccessPhotoUrl = journey.successPhotoUrl;
+  if (journey.successPhotoUrl && (journey.successPhotoUrl.includes('/storage/v1/object/public/') || journey.successPhotoUrl.includes('/storage/v1/s3/'))) {
+    try {
+      const urlObj = new URL(journey.successPhotoUrl);
+      let bucket = '';
+      let key = '';
+
+      if (journey.successPhotoUrl.includes('/storage/v1/object/public/')) {
+        const parts = urlObj.pathname.split('/public/');
+        if (parts.length > 1) {
+          const fullPath = parts[1];
+          const pathParts = fullPath.split('/');
+          bucket = pathParts[0];
+          key = pathParts.slice(1).join('/');
+        }
+      } else {
+        const s3Match = journey.successPhotoUrl.match(/\/storage\/v1\/s3\/([^/]+)\/(.+?)(?:\?|$)/);
+        if (s3Match) {
+          bucket = s3Match[1];
+          key = s3Match[2];
+        }
+      }
+
+      if (bucket && key) {
+        const command = new GetObjectCommand({ Bucket: bucket, Key: key });
+        signedSuccessPhotoUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+        console.log(`[Journey] Signed success photo URL for ${key}`);
+      }
+    } catch (e) {
+      console.error('[Journey page] Failed to sign success photo URL:', e);
+    }
+  }
+
   return (
     <JourneyViewer
       journey={{
         ...journey,
         photos: photosWithSignedUrls,
+        successPhotoUrl: signedSuccessPhotoUrl,
       }}
       isPreview={false}
     />

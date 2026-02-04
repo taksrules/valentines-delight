@@ -8,19 +8,36 @@ import AnimatedText from './ui/AnimatedText';
 import Button from './ui/Button';
 import { getOccasionTheme, formatMessage, getGradientClasses } from '@/lib/occasion-themes';
 import { MemoryPhoto } from '../app/types';
+import { useRef } from 'react';
 
 interface CelebrationScreenProps {
+  journeyId?: string | null;
   recipientName: string;
   creatorName: string | null;
   occasionType: string;
   photos: MemoryPhoto[];
+  successPhotoUrl?: string | null;
+  referralCode?: string | null;
+  allowSharing?: boolean;
   retryCount: number;
   onReplay?: () => void;
 }
 
-export default function CelebrationScreen({ recipientName, creatorName, occasionType, photos, retryCount, onReplay }: CelebrationScreenProps) {
+export default function CelebrationScreen({ 
+  journeyId,
+  recipientName, 
+  creatorName, 
+  occasionType, 
+  photos, 
+  successPhotoUrl,
+  referralCode,
+  allowSharing = true,
+  retryCount, 
+  onReplay 
+}: CelebrationScreenProps) {
   const [showButtons, setShowButtons] = useState(false);
   const [showPhotos, setShowPhotos] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const theme = getOccasionTheme(occasionType);
   const gradientClasses = getGradientClasses(occasionType);
   
@@ -67,6 +84,38 @@ export default function CelebrationScreen({ recipientName, creatorName, occasion
     // Show buttons after photos
     setTimeout(() => setShowButtons(true), duration + 3000);
   }, [isFirstTime]);
+
+  const handleShare = async () => {
+    if (!journeyId) {
+      alert('Sharing is only available for published journeys.');
+      return;
+    }
+    
+    setIsGenerating(true);
+    try {
+      const response = await fetch(`/api/v1/journeys/${journeyId}/share-image`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) throw new Error('Generation failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tenderly-moment-${referralCode || 'share'}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to generate sharing image:', err);
+      alert('Failed to generate high-res share image. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
   
   return (
     <div className={`min-h-screen flex items-center justify-center p-6 relative z-10 ${gradientClasses}`}>
@@ -106,17 +155,57 @@ export default function CelebrationScreen({ recipientName, creatorName, occasion
         
         <motion.div
           animate={{
-            scale: [1, 1.1, 1],
+            scale: [1, 1.05, 1],
           }}
           transition={{
-            duration: 1,
-            repeat: 3,
+            duration: 2,
+            repeat: Infinity,
             ease: 'easeInOut'
           }}
+          className="relative inline-block"
         >
-          <h1 className="text-6xl md:text-8xl mb-8">
-            🎉 💕 🎉
-          </h1>
+          {successPhotoUrl ? (
+            <div className="relative mb-8">
+              {/* Decorative background for the photo */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-rose-400 to-pink-500 rounded-2xl blur-xl opacity-20 animate-pulse" />
+              
+              <div className="relative bg-white dark:bg-neutral-900 p-4 shadow-2xl rounded-2xl rotate-2 transform hover:rotate-0 transition-transform duration-500">
+                <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-xl overflow-hidden mb-2">
+                  <ShimmerImage
+                    src={successPhotoUrl}
+                    alt="Success!"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                {creatorName && (
+                  <p className="font-romantic text-2xl text-rose-500 dark:text-rose-400 mt-2">
+                    {creatorName} 💕
+                  </p>
+                )}
+              </div>
+              
+              {/* Extra hearts around the photo */}
+              <motion.span 
+                className="absolute -top-4 -right-4 text-4xl"
+                animate={{ y: [-10, 10, -10] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                ✨
+              </motion.span>
+              <motion.span 
+                className="absolute -bottom-4 -left-4 text-4xl"
+                animate={{ y: [10, -10, 10] }}
+                transition={{ duration: 4, repeat: Infinity }}
+              >
+                💖
+              </motion.span>
+            </div>
+          ) : (
+            <h1 className="text-6xl md:text-8xl mb-8">
+              🎉 💕 🎉
+            </h1>
+          )}
         </motion.div>
         
         <AnimatedText delay={0.5} duration={1}>
@@ -203,23 +292,35 @@ export default function CelebrationScreen({ recipientName, creatorName, occasion
             </motion.p>
           </motion.div>
         )}
-        
-        {showButtons && onReplay && (
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center mt-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Button 
-              variant="secondary" 
-              onClick={onReplay}
-              className="text-sm"
+        {showButtons && (
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center mt-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
             >
-              Experience it again ↻
-            </Button>
-          </motion.div>
-        )}
+              {onReplay && (
+                <Button 
+                  variant="secondary" 
+                  onClick={onReplay}
+                  className="text-sm"
+                >
+                  Experience it again ↻
+                </Button>
+              )}
+
+              {allowSharing && (
+                <Button
+                  variant="outline"
+                  onClick={handleShare}
+                  isLoading={isGenerating}
+                  className="text-sm border-rose-300 text-rose-600 hover:bg-rose-50"
+                >
+                  Share This Moment 📸
+                </Button>
+              )}
+            </motion.div>
+          )}
       </motion.div>
     </div>
   );

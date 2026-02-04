@@ -27,7 +27,7 @@ export default function MemoryReveal({ photos, occasionType, onComplete }: Memor
       return () => clearTimeout(timer);
     } else if (currentPhotoIndex === photos.length && !allRevealed) {
       setAllRevealed(true);
-      setTimeout(onComplete, 2000); // Wait 2 seconds after all photos shown
+      setTimeout(onComplete, 4500); // Wait 4.5 seconds after all photos shown
     }
   }, [currentPhotoIndex, photos.length, allRevealed, onComplete]);
   

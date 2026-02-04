@@ -20,6 +20,9 @@ interface Journey {
   musicMood: string | null;
   includeBigQuestion: boolean;
   bigQuestionText: string | null;
+  successPhotoUrl: string | null;
+  referralCode: string | null;
+  allowSharing: boolean;
   retryCount: number;
   questions: Array<{
     id: string;
@@ -167,6 +170,7 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
         {currentSlide.type === 'celebration' && (
           <CelebrationScreen
             key="celebration"
+            journeyId={journey.id}
             recipientName={journey.recipientName}
             creatorName={journey.creatorName}
             occasionType={journey.occasionType}
@@ -175,6 +179,9 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
               url: p.imageUrl,
               caption: p.caption || '',
             }))}
+            successPhotoUrl={journey.successPhotoUrl}
+            referralCode={journey.referralCode}
+            allowSharing={journey.allowSharing}
             retryCount={noClickCount}
             onReplay={isPreview ? handleReplay : undefined}
           />
