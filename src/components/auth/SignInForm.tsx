@@ -29,13 +29,19 @@ export default function SignInForm() {
     setSuccessMessage(null);
 
     try {
+      // In NextAuth v5, for credentials provider, it's often more reliable 
+      // to let the server handle the redirect to ensure cookies are set correctly
       const result = await signIn("credentials", {
         email,
         password,
-        redirect: false,
+        redirect: true,
+        callbackUrl: "/dashboard",
       });
 
+      console.log("Sign in result:", result);
+
       if (result?.error) {
+        console.error("Sign in error:", result.error);
         if (result.error === "CredentialsSignin") {
           setError("Invalid email or password");
         } else if (result.error === "EmailNotVerified") {
@@ -43,10 +49,6 @@ export default function SignInForm() {
         } else {
           setError(result.error);
         }
-      } else if (result?.ok) {
-        // Successful login - redirect to dashboard
-        router.push("/dashboard");
-        router.refresh();
       }
     } catch {
       setError("Something went wrong. Please try again.");
