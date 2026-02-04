@@ -137,7 +137,6 @@ model Journey {
   // Expiration (Phase 2)
   expiresAt         DateTime?
   allowReplay       Boolean   @default(true) // Can recipient replay after completion?
-  successPhotoUrl   String?   // Photo of the creator displayed at the end
   
   // Media Configuration
   musicEnabled      Boolean   @default(true)
