@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Providers from "@/components/Providers";
 import NextTopLoader from 'nextjs-toploader';
+import CookieConsent from '@/components/ui/CookieConsent';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -56,6 +57,7 @@ export default function RootLayout({
           shadow="0 0 10px #f43f5e,0 0 5px #f43f5e"
         />
         <Providers>{children}</Providers>
+        <CookieConsent />
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import HowItWorks from '@/components/landing/HowItWorks';
 import Features from '@/components/landing/Features';
 import Testimonials from '@/components/landing/Testimonials';
 import FinalCTA from '@/components/landing/FinalCTA';
+import Footer from '@/components/ui/Footer';
 
 export const metadata: Metadata = {
   title: 'Emotional Moments - Turn Your Love Story Into An Unforgettable Journey',
@@ -30,6 +31,7 @@ export default function LandingPage() {
       <Features />
       <Testimonials />
       <FinalCTA />
+      <Footer />
     </main>
   );
 }
