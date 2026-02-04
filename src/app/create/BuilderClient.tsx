@@ -5,12 +5,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBuilderStore } from '@/stores/builderStore';
 import StepIndicator from '@/components/builder/StepIndicator';
+import { QRCodeCanvas } from 'qrcode.react';
 import Step1Occasion from '@/components/builder/Step1Occasion';
 import Step2Names from '@/components/builder/Step2Names';
 import Step3Questions from '@/components/builder/Step3Questions';
 import Step4Photos from '@/components/builder/Step4Photos';
 import Step5Settings from '@/components/builder/Step5Settings';
 import Container from '@/components/ui/Container';
+import { PageLoader } from '@/components/ui/Loader';
+import Button from '@/components/ui/Button'; // Assuming I want to swap existing buttons to my Button component
 
 interface BuilderClientProps {
   user: {
@@ -40,13 +43,15 @@ export default function BuilderClient({ user }: BuilderClientProps) {
   } = useBuilderStore();
 
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(!!journeyId);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [publishedSlug, setPublishedSlug] = useState('');
 
   // Load existing journey if editing
   useEffect(() => {
     if (journeyId) {
-      loadJourney(journeyId);
+      setIsInitialLoading(true);
+      loadJourney(journeyId).finally(() => setIsInitialLoading(false));
     }
   }, [journeyId, loadJourney]);
 
@@ -158,6 +163,10 @@ export default function BuilderClient({ user }: BuilderClientProps) {
     }
   };
 
+  if (isInitialLoading) {
+    return <PageLoader />;
+  }
+
   return (
     <div className="min-h-screen py-12">
       <Container>
@@ -190,7 +199,7 @@ export default function BuilderClient({ user }: BuilderClientProps) {
                   clipRule="evenodd"
                 />
               </svg>
-              <span>Saved {formatTimeSince(lastSaved)}</span>
+              <span>Saved {formatTimeSince(lastSaved as Date)}</span>
             </div>
           ) : null}
         </div>
@@ -210,17 +219,13 @@ export default function BuilderClient({ user }: BuilderClientProps) {
 
         {/* Navigation */}
         <div className="mt-12 flex items-center justify-between max-w-4xl mx-auto">
-          <button
+          <Button
             onClick={handleBack}
             disabled={currentStep === 1}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              currentStep === 1
-                ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-600 cursor-not-allowed'
-                : 'bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100'
-            }`}
+            variant="secondary"
           >
             ← Back
-          </button>
+          </Button>
 
           <div className="flex items-center gap-4">
             {!canProceed() && getStepHelp() && (
@@ -230,29 +235,21 @@ export default function BuilderClient({ user }: BuilderClientProps) {
             )}
 
             {currentStep < 5 ? (
-              <button
+              <Button
                 onClick={handleNext}
                 disabled={!canProceed()}
-                className={`px-8 py-3 rounded-lg font-medium transition-colors ${
-                  canProceed()
-                    ? 'bg-rose-500 hover:bg-rose-600 text-white'
-                    : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-500 cursor-not-allowed'
-                }`}
+                isLoading={isSaving}
               >
                 Continue →
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 onClick={handlePublish}
-                disabled={isPublishing || !canProceed()}
-                className={`px-8 py-3 rounded-lg font-medium transition-colors ${
-                  canProceed() && !isPublishing
-                    ? 'bg-rose-500 hover:bg-rose-600 text-white'
-                    : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-500 cursor-not-allowed'
-                }`}
+                disabled={!canProceed()}
+                isLoading={isPublishing || isSaving}
               >
-                {isPublishing ? 'Publishing...' : '🎉 Publish Journey'}
-              </button>
+                🎉 Publish Journey
+              </Button>
             )}
           </div>
         </div>
@@ -275,7 +272,8 @@ export default function BuilderClient({ user }: BuilderClientProps) {
 // Success Modal Component
 function SuccessModal({ slug, onClose }: { slug: string; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
-  const link = `https://emotionalmoments.app/j/${slug}`;
+  const [showQR, setShowQR] = useState(false);
+  const link = `${window.location.origin}/j/${slug}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(link);
@@ -283,55 +281,94 @@ function SuccessModal({ slug, onClose }: { slug: string; onClose: () => void }) 
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const downloadQRCode = () => {
+    const canvas = document.getElementById('qr-code') as HTMLCanvasElement;
+    if (canvas) {
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.download = `qr-code-${slug}.png`;
+      a.href = url;
+      a.click();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white dark:bg-neutral-900 rounded-2xl p-8 max-w-md w-full shadow-2xl"
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-rose-100 dark:border-neutral-800"
       >
-        <div className="text-center mb-6">
-          <div className="text-6xl mb-4">🎉</div>
-          <h2 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
+        <div className="text-center mb-8">
+          <div className="text-5xl mb-4">🎉</div>
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
             Your Journey is Live!
           </h2>
-          <p className="text-neutral-600 dark:text-neutral-300">
-            Share this link with your special someone
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+            Share this link to start the magic
           </p>
         </div>
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-            Share Link
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
+        <div className="space-y-6">
+          {/* QR Code Section */}
+          <div className="flex flex-col items-center justify-center p-6 bg-rose-50 dark:bg-neutral-950 rounded-2xl border border-rose-100 dark:border-neutral-800">
+            <QRCodeCanvas
+              id="qr-code"
               value={link}
-              readOnly
-              className="flex-1 px-4 py-3 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg text-neutral-900 dark:text-neutral-100 font-mono text-sm"
+              size={160}
+              level="H"
+              includeMargin={true}
+              imageSettings={{
+                src: "/favicon.png", // Attempt to use favicon as logo in center
+                x: undefined,
+                y: undefined,
+                height: 24,
+                width: 24,
+                excavate: true,
+              }}
+              className="rounded-lg shadow-sm"
             />
-            <button
-              onClick={handleCopy}
-              className="px-4 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors"
+            <button 
+              onClick={downloadQRCode}
+              className="mt-4 text-xs font-medium text-rose-500 hover:text-rose-600 dark:text-rose-400 underline decoration-rose-200 underline-offset-4"
             >
-              {copied ? '✓' : 'Copy'}
+              Download QR Code
             </button>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
+              Share Link
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={link}
+                readOnly
+                className="flex-1 px-4 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-neutral-100 font-mono text-xs overflow-hidden text-ellipsis"
+              />
+              <button
+                onClick={handleCopy}
+                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-rose-200 dark:shadow-none"
+              >
+                {copied ? '✓' : 'Copy'}
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="mt-8 grid grid-cols-2 gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-6 py-3 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-lg font-medium transition-colors"
+            className="px-4 py-3 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100 rounded-xl text-sm font-semibold transition-colors"
           >
-            View Dashboard
+            Dashboard
           </button>
           <button
             onClick={() => window.open(`/j/${slug}`, '_blank')}
-            className="flex-1 px-6 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-lg font-medium transition-colors"
+            className="px-4 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 rounded-xl text-sm font-semibold transition-colors"
           >
-            Preview Journey
+            Preview
           </button>
         </div>
       </motion.div>

@@ -47,19 +47,29 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    // Log upload start
+    console.log(`[Upload] Starting S3 upload for file: ${file.name}, size: ${file.size}, type: ${file.type}`);
+    console.log(`[Upload] Target filename: ${filename}`);
+
     // Upload to Supabase Storage via S3
-    await s3Client.send(
-      new PutObjectCommand({
-        Bucket: JOURNEY_PHOTOS_BUCKET,
-        Key: filename,
-        Body: buffer,
-        ContentType: file.type,
-        Metadata: {
-          userId: session!.user!.id,
-          originalName: file.name,
-        },
-      })
-    );
+    try {
+      await s3Client.send(
+        new PutObjectCommand({
+          Bucket: JOURNEY_PHOTOS_BUCKET,
+          Key: filename,
+          Body: buffer,
+          ContentType: file.type,
+          Metadata: {
+            userId: session!.user!.id,
+            originalName: file.name,
+          },
+        })
+      );
+      console.log(`[Upload] S3 upload successful for: ${filename}`);
+    } catch (s3Error) {
+      console.error(`[Upload] S3 send failed for: ${filename}`);
+      throw s3Error; // Re-throw to be caught by the outer catch block
+    }
 
     // Generate public URL
     const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${JOURNEY_PHOTOS_BUCKET}/${filename}`;

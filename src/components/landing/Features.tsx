@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';
-import Image from 'next/image';
+import { ShimmerImage } from '@/components/ui/Loader';
 
 const features = [
   {
@@ -71,7 +71,7 @@ export default function Features() {
             >
               {/* Icon */}
               <div className="relative w-16 h-16 mb-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 p-3 flex items-center justify-center">
-                <Image
+                <ShimmerImage
                   src={feature.icon}
                   alt={feature.title}
                   fill

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useBuilderStore, type Photo } from '@/stores/builderStore';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import Image from 'next/image';
+import { ShimmerImage } from '@/components/ui/Loader';
 import {
   DndContext,
   closestCenter,
@@ -25,7 +25,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 export default function Step4Photos() {
   const { photos, addPhoto, updatePhoto, removePhoto, reorderPhotos } = useBuilderStore();
-  const [uploading, setUploading] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -63,10 +63,11 @@ export default function Step4Photos() {
         continue;
       }
 
-      // Create local preview URL for immediate display
+      // Create unique ID for this upload attempt
+      const uploadId = Math.random().toString(36).substring(7);
       const previewUrl = URL.createObjectURL(file);
 
-      setUploading(true);
+      setUploadingFiles(prev => [...prev, uploadId]);
 
       try {
         // Upload to Supabase Storage
@@ -100,7 +101,7 @@ export default function Step4Photos() {
         // Clean up preview URL on error
         URL.revokeObjectURL(previewUrl);
       } finally {
-        setUploading(false);
+        setUploadingFiles(prev => prev.filter(id => id !== uploadId));
       }
     }
   }, [photos, addPhoto]);
@@ -174,6 +175,20 @@ export default function Step4Photos() {
                   onUpdateCaption={(caption) => updatePhoto(index, { caption })}
                   onRemove={() => removePhoto(index)}
                 />
+              ))}
+              
+              {/* Uploading Placeholders */}
+              {uploadingFiles.map((id) => (
+                <div 
+                  key={id}
+                  className="aspect-square bg-neutral-100 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-800 flex flex-col items-center justify-center p-4 overflow-hidden relative"
+                >
+                  <div className="shimmer absolute inset-0 opacity-50" />
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div className="w-8 h-8 border-3 border-rose-500 border-t-transparent rounded-full animate-spin mb-3" />
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Uploading...</p>
+                  </div>
+                </div>
               ))}
             </div>
           </SortableContext>
@@ -261,7 +276,7 @@ function SortablePhotoCard({
     >
       {/* Image */}
       <div className="relative aspect-square bg-neutral-100 dark:bg-neutral-800">
-        <Image
+        <ShimmerImage
           src={photo.previewUrl || photo.imageUrl}
           alt={photo.caption || `Photo ${index + 1}`}
           fill

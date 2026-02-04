@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
+import { ShimmerImage } from './ui/Loader';
 import { MemoryPhoto } from '../app/types';
 import AnimatedText from './ui/AnimatedText';
 import { getOccasionTheme, getGradientClasses } from '@/lib/occasion-themes';
@@ -68,7 +68,7 @@ export default function MemoryReveal({ photos, occasionType, onComplete }: Memor
                 {/* Polaroid-style frame */}
                 <div className="bg-white dark:bg-neutral-900 p-4 shadow-2xl rounded-lg transform hover:scale-105 transition-transform duration-300 dark:shadow-neutral-900/50">
                   <div className="aspect-square bg-gradient-to-br from-rose-100 to-pink-100 dark:from-neutral-800 dark:to-neutral-800 rounded overflow-hidden mb-4 relative">
-                    <Image
+                    <ShimmerImage
                       src={photo.url}
                       alt={photo.caption}
                       fill

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import { ShimmerImage } from '@/components/ui/Loader';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -78,7 +78,7 @@ export default function JourneyCard({ journey, onDelete }: JourneyCardProps) {
       {/* Thumbnail */}
       <div className="relative h-48 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-neutral-800 dark:to-neutral-900">
         {journey.firstPhotoUrl ? (
-          <Image
+          <ShimmerImage
             src={journey.firstPhotoUrl}
             alt={`Journey for ${journey.recipientName}`}
             fill

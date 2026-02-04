@@ -131,12 +131,12 @@ export default function Step5Settings() {
             </label>
             <div className="flex items-center gap-2">
               <div className="flex-1 px-4 py-3 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg text-neutral-900 dark:text-neutral-100 font-mono text-sm">
-                emotionalmoments.app/j/{generatedSlug}
+                https://www.tenderly.space/j/{generatedSlug}
               </div>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    `https://emotionalmoments.app/j/${generatedSlug}`
+                    `https://www.tenderly.space/j/${generatedSlug}`
                   );
                 }}
                 className="px-4 py-3 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 rounded-lg transition-colors"

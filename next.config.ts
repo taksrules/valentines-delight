@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Exclude pg and related packages from bundling to avoid Windows junction point issues
-  serverExternalPackages: ["pg", "pg-native", "@prisma/client"],
+  serverExternalPackages: ["pg", "pg-native", "@prisma/client", "@aws-sdk/client-s3", "@aws-sdk/s3-request-presigner"],
   
   images: {
     remotePatterns: [

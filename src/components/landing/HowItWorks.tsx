@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';
-import Image from 'next/image';
+import { ShimmerImage } from '@/components/ui/Loader';
 
 const steps = [
   {
@@ -76,7 +76,7 @@ export default function HowItWorks() {
 
                 {/* Product screenshot */}
                 <div className="relative w-full aspect-square mb-4 rounded-xl overflow-hidden border border-rose-100 dark:border-neutral-700 shadow-sm bg-white dark:bg-neutral-800">
-                  <Image
+                  <ShimmerImage
                     src={step.image}
                     alt={step.title}
                     fill

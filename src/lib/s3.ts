@@ -10,6 +10,9 @@ export const s3Client = new S3Client({
     secretAccessKey: process.env.SUPABASE_ACCESS_KEY_SECRET!,
   },
   forcePathStyle: true,
+  // Using a more robust request handler configuration
+  // to avoid SSL issues in some environments
+  maxAttempts: 3,
 });
 
 export const JOURNEY_PHOTOS_BUCKET = 'journey-photos';

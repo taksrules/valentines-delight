@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import { ShimmerImage } from './ui/Loader';
 import confetti from 'canvas-confetti';
 import AnimatedText from './ui/AnimatedText';
 import Button from './ui/Button';
@@ -177,7 +177,7 @@ export default function CelebrationScreen({ recipientName, creatorName, occasion
                   {/* Polaroid frame */}
                   <div className="bg-white dark:bg-neutral-900 p-3 shadow-xl rounded-lg dark:shadow-neutral-900/50">
                     <div className="aspect-square bg-gradient-to-br from-rose-100 to-pink-100 dark:from-neutral-800 dark:to-neutral-800 rounded overflow-hidden mb-2 relative">
-                      <Image
+                      <ShimmerImage
                         src={photo.url}
                         alt={photo.caption}
                         fill

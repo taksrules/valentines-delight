@@ -6,6 +6,8 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardOverview from '@/components/dashboard/DashboardOverview';
 import JourneyTimeline from '@/components/dashboard/JourneyTimeline';
 import Container from '@/components/ui/Container';
+import JourneyCardSkeleton from '@/components/dashboard/JourneyCardSkeleton';
+import { Shimmer } from '@/components/ui/Loader';
 
 interface Journey {
   id: string;
@@ -83,13 +85,17 @@ export default function DashboardClient({ user }: DashboardClientProps) {
 
   if (isLoading) {
     return (
-      <div className="py-12">
+      <div className="py-8">
         <Container>
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-neutral-600 dark:text-neutral-300">Loading your journeys...</p>
-            </div>
+          <div className="mb-12">
+            <Shimmer className="h-10 w-48 rounded-lg mb-4" />
+            <Shimmer className="h-6 w-96 rounded-lg opacity-60" />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <JourneyCardSkeleton key={i} />
+            ))}
           </div>
         </Container>
       </div>
