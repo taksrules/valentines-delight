@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   // Exclude pg and related packages from bundling to avoid Windows junction point issues
@@ -16,7 +17,16 @@ const nextConfig: NextConfig = {
         hostname: 'vbszttesustjohrftklf.supabase.co',
         pathname: '/storage/v1/s3/**', // For signed URLs
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
     ],
+  },
+  // @ts-ignore - Turbopack root config for monorepos
+  turbopack: {
+    root: path.resolve("."),
   },
 };
 
