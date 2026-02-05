@@ -9,6 +9,7 @@ import Button from './ui/Button';
 import { getOccasionTheme, formatMessage, getGradientClasses } from '@/lib/occasion-themes';
 import { MemoryPhoto } from '../app/types';
 import { useRef } from 'react';
+import Link from 'next/link';
 
 interface CelebrationScreenProps {
   journeyId?: string | null;
@@ -21,6 +22,7 @@ interface CelebrationScreenProps {
   allowSharing?: boolean;
   retryCount: number;
   onReplay?: () => void;
+  isDemo?: boolean;
 }
 
 export default function CelebrationScreen({ 
@@ -33,7 +35,8 @@ export default function CelebrationScreen({
   referralCode,
   allowSharing = true,
   retryCount, 
-  onReplay 
+  onReplay,
+  isDemo = false
 }: CelebrationScreenProps) {
   const [showButtons, setShowButtons] = useState(false);
   const [showPhotos, setShowPhotos] = useState(false);
@@ -321,6 +324,29 @@ export default function CelebrationScreen({
               )}
             </motion.div>
           )}
+
+        {isDemo && showButtons && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="mt-16 mx-auto max-w-lg p-8 bg-white/95 backdrop-blur-md rounded-2xl border-2 border-rose-100 shadow-xl dark:bg-neutral-900/90 dark:border-rose-500/20"
+          >
+            <div className="space-y-4">
+              <h3 className="text-2xl font-romantic text-rose-500 dark:text-rose-400">
+                Want to create your own moment? 💕
+              </h3>
+              <p className="text-neutral-600 dark:text-neutral-300">
+                Build your personalized journey and share it with your special someone in just 5 minutes.
+              </p>
+              <Link href="/sign-up" className="block pt-2">
+                <Button variant="primary" className="w-full py-4 text-lg shadow-lg shadow-rose-500/20">
+                  Create Your Journey — Free
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );

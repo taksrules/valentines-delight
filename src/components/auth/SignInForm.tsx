@@ -34,7 +34,7 @@ export default function SignInForm() {
       // In NextAuth v5, for credentials provider, it's often more reliable 
       // to let the server handle the redirect to ensure cookies are set correctly
       const result = await signIn("credentials", {
-        email,
+        email:email.toLowerCase(),
         password,
         redirect: true,
         callbackUrl: "/dashboard",
