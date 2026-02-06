@@ -28,8 +28,13 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({ results });
-  } catch (error) {
-    console.error('Error in music API route:', error);
-    return NextResponse.json({ error: 'Failed to fetch music' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error in music API route:', {
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause
+    });
+    // Return empty results instead of 500 to prevent UI hard-errors
+    return NextResponse.json({ results: [] });
   }
 }

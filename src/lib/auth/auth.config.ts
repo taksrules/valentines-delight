@@ -21,8 +21,18 @@ export const authConfig = {
       }
       return session;
     },
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const isDashboard = nextUrl.pathname.startsWith('/dashboard');
+      if (isDashboard) {
+        if (isLoggedIn) return true;
+        return false; // Redirect to login
+      }
+      return true;
+    },
   },
-  providers: [], // Empty array for now, providers added in auth.ts
+  providers: [], 
   trustHost: true,
   secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
 } satisfies NextAuthConfig;
+

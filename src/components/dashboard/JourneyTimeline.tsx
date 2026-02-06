@@ -53,7 +53,7 @@ export default function JourneyTimeline({ journeys, onDeleteJourney }: JourneyTi
                   <div className="relative">
                     {/* Floating Date Bubble */}
                     <div className={`absolute top-0 ${isEven ? 'right-0 -mr-4 md:right-auto md:left-full md:ml-8' : 'left-0 -ml-4 md:left-auto md:right-full md:mr-8'} -mt-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-full px-4 py-1 shadow-sm z-20`}>
-                      <span className="text-sm font-bold text-rose-500">
+                      <span className="text-sm font-medium text-rose-500">
                         {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)}
                       </span>
                     </div>
@@ -75,7 +75,7 @@ export default function JourneyTimeline({ journeys, onDeleteJourney }: JourneyTi
 
       {/* Finishing Element */}
       <div className="mt-24 text-center">
-         <div className="inline-block px-8 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-full border border-neutral-200 dark:border-neutral-700 font-bold text-neutral-500">
+         <div className="inline-block px-8 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-full border border-neutral-200 dark:border-neutral-700 font-medium text-neutral-500">
             End of Timeline 💫
          </div>
       </div>

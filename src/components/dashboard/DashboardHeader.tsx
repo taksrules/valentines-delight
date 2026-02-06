@@ -31,10 +31,10 @@ export default function DashboardHeader({ userName, journeyCount, monthlyLimit, 
       {/* Welcome Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-1">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-1">
             {currentTab === 'Dashboard' ? `Welcome back, ${userName || 'Creator'}! ✨` : currentTab}
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400">
+          <p className="text-base font-normal text-neutral-600 dark:text-neutral-400">
             {currentTab === 'Dashboard' 
               ? "Here's what's happening with your emotional moments."
               : "Manage and relive the journeys you've created."}
@@ -43,7 +43,7 @@ export default function DashboardHeader({ userName, journeyCount, monthlyLimit, 
 
         <div className="flex items-center gap-3">
           <Link href="/create">
-            <button className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold shadow-lg shadow-rose-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <button className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-medium shadow-lg shadow-rose-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
@@ -97,11 +97,11 @@ export default function DashboardHeader({ userName, journeyCount, monthlyLimit, 
               <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center`}>
                 {stat.icon}
               </div>
-              <h3 className="text-sm font-bold text-neutral-600 dark:text-neutral-400">
+              <h3 className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                 {stat.label}
               </h3>
             </div>
-            <p className="text-4xl font-black text-neutral-900 dark:text-neutral-100 tracking-tight">
+            <p className="text-5xl font-bold text-neutral-900 dark:text-white tracking-tight">
               {stat.count}
             </p>
           </motion.div>

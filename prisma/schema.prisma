@@ -657,7 +657,7 @@ model AuditLog {
 
 model MusicTrack {
   id              String   @id @default(cuid())
-  audiusTrackId   String   @map("audius_track_id")
+  audiusTrackId   String   @unique @map("audius_track_id")
   title           String   @map("track_title")
   artist          String   @map("artist_name")
   mood            String

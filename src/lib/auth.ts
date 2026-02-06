@@ -1,10 +1,14 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { authConfig } from "./auth/auth.config";
 
+/**
+ * Main Auth instance for server-side use in API routes and Server Components.
+ * This includes heavyweight dependencies like providers and DB logic.
+ */
 export const { handlers, auth, signIn, signOut } = NextAuth({
+
   ...authConfig,
   providers: [
     Credentials({
@@ -21,9 +25,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
 
+        // Lazy load prisma to avoid initializing it during middleware checks
+        const { prisma } = await import("@/lib/prisma");
+
         const user = await prisma.user.findUnique({
           where: { email },
         });
+
 
         if (!user || !user.passwordHash) {
           return null;

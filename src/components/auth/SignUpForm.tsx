@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import StepIndicator from "@/components/ui/StepIndicator";
 import Button from "@/components/ui/Button";
+import { InvisibleTurnstile } from "@/components/ui/InvisibleTurnstile";
 
 const STEPS = [
   { label: "Your details", description: "Name, email & password" },
@@ -21,9 +22,18 @@ export default function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [showTurnstile, setShowTurnstile] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent, token?: string) => {
+    e?.preventDefault();
+
+    // If no token provided and not already verified, trigger Turnstile
+    if (!token && !turnstileToken) {
+      setShowTurnstile(true);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -47,13 +57,24 @@ export default function SignUpForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          turnstileToken: token || turnstileToken
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Registration failed");
+        if (response.status === 429) {
+          setError(data.error || "Too many attempts. Please wait a moment before trying again.");
+        } else {
+          setError(data.error || "Registration failed");
+        }
+        setTurnstileToken(null);
+        setShowTurnstile(false);
         return;
       }
 
@@ -61,6 +82,8 @@ export default function SignUpForm() {
       setCurrentStep(1);
     } catch {
       setError("Something went wrong. Please try again.");
+      setTurnstileToken(null);
+      setShowTurnstile(false);
     } finally {
       setIsLoading(false);
     }
@@ -309,6 +332,23 @@ export default function SignUpForm() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Invisible Turnstile */}
+      {showTurnstile && (
+        <InvisibleTurnstile
+          action="signup"
+          onVerify={(token: string) => {
+            setTurnstileToken(token);
+            setShowTurnstile(false);
+            const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+            handleSubmit(fakeEvent, token);
+          }}
+          onError={(error: string) => {
+            setError(error);
+            setShowTurnstile(false);
+          }}
+        />
+      )}
     </div>
   );
 }

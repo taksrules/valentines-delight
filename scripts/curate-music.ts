@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 // Load environment variables from .env.local
 dotenv.config({ path: '.env.local' });
 
-const moods = ['romantic', 'nostalgic', 'celebratory', 'melancholic'];
+const moods = ['romantic', 'nostalgic', 'celebratory', 'melancholic', 'lofi', 'chill', 'ambient', 'pop'];
 
 async function curateTracks() {
   console.log('--- Audius Curation Script ---');
@@ -15,27 +15,49 @@ async function curateTracks() {
     return;
   }
 
+  let totalUpserted = 0;
+
   for (const mood of moods) {
     console.log(`\n=== Searching ${mood} tracks ===`);
     
     try {
       const tracks = await searchTracks(mood, 30);
+      console.log(`Found ${tracks.length} tracks on Audius`);
       
-      console.log(`Found ${tracks.length} tracks`);
-      
-      tracks.forEach((track: any, index: number) => {
-        console.log(`${index + 1}. ${track.title} by ${track.user.name}`);
-        console.log(`   ID: ${track.id}`);
-        console.log(`   Stream: https://audius.co/tracks/${track.id}/stream`);
-        console.log(`   Mood: ${track.mood || 'Not tagged'}`);
-        console.log('');
-      });
+      for (const track of tracks) {
+        try {
+          await prisma.musicTrack.upsert({
+            where: { audiusTrackId: track.id },
+            update: {
+              title: track.title,
+              artist: track.user.name,
+              mood: mood,
+              duration: track.duration,
+              artworkUrl: track.artwork?.['150x150'] || track.artwork?.['480x480'] || null,
+            },
+            create: {
+              audiusTrackId: track.id,
+              title: track.title,
+              artist: track.user.name,
+              mood: mood,
+              duration: track.duration,
+              artworkUrl: track.artwork?.['150x150'] || track.artwork?.['480x480'] || null,
+            },
+          });
+          totalUpserted++;
+        } catch (dbError) {
+          console.error(`Failed to upsert track ${track.title}:`, dbError);
+        }
+      }
+      console.log(`Completed ${mood} curation.`);
     } catch (error) {
       console.error(`Error searching ${mood}:`, error);
     }
   }
 
-  console.log('\nUse "INSERT INTO music_tracks..." into your database to curate specific tracks.');
+  console.log(`\n--- Finished! Total tracks processed/updated: ${totalUpserted} ---`);
 }
 
-curateTracks();
+curateTracks()
+  .catch(err => console.error('Script failed:', err))
+  .finally(() => prisma.$disconnect());

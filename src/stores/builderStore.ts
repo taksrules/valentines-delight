@@ -74,7 +74,7 @@ interface BuilderState {
   setAllowSharing: (allow: boolean) => void;
   
   // Save/Load
-  saveProgress: () => Promise<void>;
+  saveProgress: (turnstileToken?: string) => Promise<void>;
   loadJourney: (id: string) => Promise<void>;
   publishJourney: () => Promise<{ success: boolean; slug?: string; error?: string }>;
   reset: () => void;
@@ -172,12 +172,12 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   setSuccessPhoto: (photo) => set({ successPhoto: photo }),
   setAllowSharing: (allow) => set({ allowSharing: allow }),
 
-  saveProgress: async () => {
+  saveProgress: async (turnstileToken?: string) => {
     const state = get();
     set({ isSaving: true });
 
     try {
-      const journeyData = {
+      const journeyData: any = {
         occasionType: state.occasionType,
         recipientName: state.recipientName,
         creatorName: state.creatorName,
@@ -186,6 +186,10 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         allowSharing: state.allowSharing,
         successPhotoUrl: state.successPhoto?.imageUrl,
       };
+
+      if (turnstileToken) {
+        journeyData.turnstileToken = turnstileToken;
+      }
 
       let journeyId = state.journeyId;
 

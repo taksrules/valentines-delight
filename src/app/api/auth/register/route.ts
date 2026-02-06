@@ -6,7 +6,41 @@ import { sendVerificationEmail } from "@/lib/email/resend";
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name } = await request.json();
+    const body = await request.json();
+    const { email, password, name, turnstileToken } = body;
+
+    // Rate Limiting
+    const { signupRateLimit, getRateLimitHeaders, formatTimeRemaining, getClientIP: getIP } = await import('@/lib/rate-limit');
+    const ip = await getIP();
+    const { success, limit, remaining, reset } = await signupRateLimit.limit(ip);
+    const rlHeaders = getRateLimitHeaders(limit, remaining, reset);
+
+    if (!success) {
+      return NextResponse.json(
+        { error: `Too many registration attempts. Please try again in ${formatTimeRemaining(reset)}.` },
+        { status: 429, headers: rlHeaders }
+      );
+    }
+
+    // Verify Turnstile
+    if (!turnstileToken) {
+      console.warn('[SECURITY] Registration without Turnstile token');
+      return NextResponse.json(
+        { error: "Verification required" },
+        { status: 400 }
+      );
+    }
+
+    const { verifyTurnstileToken, getClientIP } = await import('@/lib/turnstile');
+    const clientIP = getClientIP(request);
+    const verification = await verifyTurnstileToken(turnstileToken, clientIP);
+
+    if (!verification.success) {
+      return NextResponse.json(
+        { error: verification.error || "Verification failed" },
+        { status: 400 }
+      );
+    }
 
     // Validate input
     if (!email || !password) {
