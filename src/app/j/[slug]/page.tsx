@@ -9,9 +9,19 @@ interface PageProps {
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from '@/lib/s3';
+import { getClientIP, viewRateLimit } from '@/lib/rate-limit';
+import RateLimitError from '@/components/ui/RateLimitError';
 
 export default async function JourneyPage({ params }: PageProps) {
   const { slug } = await params;
+
+  // Rate Limiting
+  const ip = await getClientIP();
+  const { success, reset } = await viewRateLimit.limit(ip);
+
+  if (!success) {
+    return <RateLimitError resetTimestamp={reset} />;
+  }
 
   // Fetch published journey by slug
   const journey = await prisma.journey.findFirst({

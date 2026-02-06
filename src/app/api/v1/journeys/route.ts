@@ -105,6 +105,25 @@ export async function POST(request: Request) {
     const { error, session } = await requireAuth();
     if (error) return error;
 
+    // Rate Limiting
+    const { createJourneyLimit, getRateLimitHeaders, formatTimeRemaining } = await import('@/lib/rate-limit');
+    const userId = session!.user!.id;
+    const { success, limit, remaining, reset } = await createJourneyLimit.limit(userId);
+    const rlHeaders = getRateLimitHeaders(limit, remaining, reset);
+
+    if (!success) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: { 
+            code: 'RATE_LIMIT_EXCEEDED', 
+            message: `You've reached your journey creation limit. Please try again in ${formatTimeRemaining(reset)}.` 
+          } 
+        },
+        { status: 429, headers: rlHeaders }
+      );
+    }
+
     const body = await request.json();
     const { recipientName, creatorName, occasionType = 'valentine', templateId, turnstileToken } = body;
 

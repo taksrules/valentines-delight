@@ -68,7 +68,11 @@ export default function SignUpForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Registration failed");
+        if (response.status === 429) {
+          setError(data.error || "Too many attempts. Please wait a moment before trying again.");
+        } else {
+          setError(data.error || "Registration failed");
+        }
         setTurnstileToken(null);
         setShowTurnstile(false);
         return;

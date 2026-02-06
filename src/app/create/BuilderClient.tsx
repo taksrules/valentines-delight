@@ -112,9 +112,9 @@ export default function BuilderClient({ user }: BuilderClientProps) {
       if (currentStep < 5) {
         setStep(currentStep + 1);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving progress:', error);
-      alert('Failed to save progress. Please check the console for details.');
+      alert(error.message || 'Failed to save progress. Please try again.');
       setTurnstileToken(null);
       setShowTurnstile(false);
     }

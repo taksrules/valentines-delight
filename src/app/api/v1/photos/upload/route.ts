@@ -9,6 +9,25 @@ export async function POST(request: Request) {
     const { error, session } = await requireAuth();
     if (error) return error;
 
+    // Rate Limiting
+    const { uploadPhotoLimit, getRateLimitHeaders, formatTimeRemaining } = await import('@/lib/rate-limit');
+    const userId = session!.user!.id;
+    const { success, limit, remaining, reset } = await uploadPhotoLimit.limit(userId);
+    const rlHeaders = getRateLimitHeaders(limit, remaining, reset);
+
+    if (!success) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: { 
+            code: 'RATE_LIMIT_EXCEEDED', 
+            message: `Upload limit reached. Please try again in ${formatTimeRemaining(reset)}.` 
+          } 
+        },
+        { status: 429, headers: rlHeaders }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
