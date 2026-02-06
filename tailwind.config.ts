@@ -60,10 +60,16 @@ const config: Config = {
           950: '#0a0a0a',
         },
       },
+      fontWeight: {
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '700',
+      },
       fontFamily: {
         romantic: ['"Dancing Script"', 'cursive'],
-        heading: ['"Inter"', 'sans-serif'],
-        body: ['"Inter"', 'sans-serif'],
+        heading: ['var(--font-geist-sans)', 'sans-serif'],
+        body: ['var(--font-geist-sans)', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

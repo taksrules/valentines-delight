@@ -4,15 +4,20 @@ import { Pool } from 'pg';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  pgPool: Pool | undefined;
+  adapter: PrismaPg | undefined;
 };
 
-// Create a connection pool for Supabase
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const pool = globalForPrisma.pgPool ?? ( () => {
+  return new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 30000,
+  });
+})();
 
-// Create Prisma adapter
-const adapter = new PrismaPg(pool);
+const adapter = globalForPrisma.adapter ?? new PrismaPg(pool);
 
 export const prisma =
   globalForPrisma.prisma ??
@@ -21,4 +26,10 @@ export const prisma =
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+  globalForPrisma.pgPool = pool;
+  globalForPrisma.adapter = adapter;
+}
+
+

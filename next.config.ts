@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["pg", "pg-native", "@prisma/client", "@aws-sdk/client-s3", "@aws-sdk/s3-request-presigner"],
   
   images: {
+    unoptimized: process.env.NODE_ENV === 'development',
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -27,14 +28,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  compress: true,
-  // @ts-ignore - swcMinify is actually part of Next.js config
-  swcMinify: true,
-  poweredByHeader: false,
-  // @ts-ignore - Turbopack root config for monorepos
-  turbopack: {
-    root: path.resolve("."),
+
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
   },
+  poweredByHeader: false,
 };
 
 export default nextConfig;

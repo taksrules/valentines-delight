@@ -14,6 +14,7 @@ import Step5Settings from '@/components/builder/Step5Settings';
 import Container from '@/components/ui/Container';
 import { PageLoader } from '@/components/ui/Loader';
 import Button from '@/components/ui/Button'; // Assuming I want to swap existing buttons to my Button component
+import { InvisibleTurnstile } from '@/components/ui/InvisibleTurnstile';
 
 interface BuilderClientProps {
   user: {
@@ -46,6 +47,8 @@ export default function BuilderClient({ user }: BuilderClientProps) {
   const [isInitialLoading, setIsInitialLoading] = useState(!!journeyId);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [publishedSlug, setPublishedSlug] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [showTurnstile, setShowTurnstile] = useState(false);
 
   // Load existing journey if editing
   useEffect(() => {
@@ -65,13 +68,14 @@ export default function BuilderClient({ user }: BuilderClientProps) {
   // Auto-save every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      if (recipientName) {
-        saveProgress();
+      // Only auto-save if already created or if we have a token (rare case for auto-save)
+      if (recipientName && (journeyId || turnstileToken)) {
+        saveProgress(turnstileToken || undefined);
       }
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [recipientName, saveProgress]);
+  }, [recipientName, saveProgress, journeyId, turnstileToken]);
 
   const canProceed = () => {
     switch (currentStep) {
@@ -90,13 +94,19 @@ export default function BuilderClient({ user }: BuilderClientProps) {
     }
   };
 
-  const handleNext = async () => {
+  const handleNext = async (token?: string) => {
     if (!canProceed()) return;
 
     try {
+      // If first save (creating journey) and no token provided, trigger Turnstile
+      if (currentStep >= 2 && recipientName && !journeyId && !token && !turnstileToken) {
+        setShowTurnstile(true);
+        return;
+      }
+
       // Only save if we have recipient name (after Step 2)
       if (currentStep >= 2 && recipientName) {
-        await saveProgress();
+        await saveProgress(token || turnstileToken || undefined);
       }
 
       if (currentStep < 5) {
@@ -105,6 +115,8 @@ export default function BuilderClient({ user }: BuilderClientProps) {
     } catch (error) {
       console.error('Error saving progress:', error);
       alert('Failed to save progress. Please check the console for details.');
+      setTurnstileToken(null);
+      setShowTurnstile(false);
     }
   };
 
@@ -118,7 +130,7 @@ export default function BuilderClient({ user }: BuilderClientProps) {
     setIsPublishing(true);
     
     // Final save
-    await saveProgress();
+    await saveProgress(turnstileToken || undefined);
 
     // Publish
     const result = await publishJourney();
@@ -255,17 +267,33 @@ export default function BuilderClient({ user }: BuilderClientProps) {
         </div>
       </Container>
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <SuccessModal
-          slug={publishedSlug}
-          onClose={() => {
-            setShowSuccessModal(false);
-            router.push('/dashboard');
-          }}
-        />
-      )}
-    </div>
+        {/* Success Modal */}
+        {showSuccessModal && (
+          <SuccessModal
+            slug={publishedSlug}
+            onClose={() => {
+              setShowSuccessModal(false);
+              router.push('/dashboard');
+            }}
+          />
+        )}
+
+        {/* Invisible Turnstile */}
+        {showTurnstile && (
+          <InvisibleTurnstile
+            action="create_journey"
+            onVerify={(token: string) => {
+              setTurnstileToken(token);
+              setShowTurnstile(false);
+              handleNext(token);
+            }}
+            onError={(error: string) => {
+              alert(error);
+              setShowTurnstile(false);
+            }}
+          />
+        )}
+      </div>
   );
 }
 

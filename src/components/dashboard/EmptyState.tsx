@@ -51,19 +51,18 @@ export default function EmptyState() {
       </div>
 
       {/* Message */}
-      <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3 text-center">
+      <h3 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white mb-3 text-center">
         Ready to Create Your First Journey?
-      </h2>
-      <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-8 text-center max-w-md">
+      </h3>
+      <p className="text-base font-normal text-neutral-600 dark:text-neutral-400 mb-8 text-center max-w-md">
         Turn your love story into an unforgettable interactive experience in just minutes.
       </p>
 
       {/* CTA Button */}
       <Link href="/create">
         <motion.button
-          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-shadow dark:shadow-rose-900/30"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full font-medium text-lg shadow-lg hover:shadow-xl transition-shadow dark:shadow-rose-900/30"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

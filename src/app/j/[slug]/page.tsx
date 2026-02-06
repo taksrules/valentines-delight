@@ -6,6 +6,10 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+import { GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { s3Client } from '@/lib/s3';
+
 export default async function JourneyPage({ params }: PageProps) {
   const { slug } = await params;
 
@@ -31,13 +35,8 @@ export default async function JourneyPage({ params }: PageProps) {
     notFound();
   }
 
-  // Generate signed URLs for photos
-  const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-  const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-  const { s3Client } = await import('@/lib/s3');
-
   const photosWithSignedUrls = await Promise.all(
-    journey.photos.map(async (photo) => {
+    journey.photos.map(async (photo:any) => {
       let signedUrl = photo.imageUrl;
 
       try {

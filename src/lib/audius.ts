@@ -5,26 +5,44 @@ export async function searchTracks(mood: string, limit = 20) {
     romantic: "love romantic emotional piano",
     nostalgic: "memories nostalgic emotional",
     celebratory: "happy celebration upbeat joyful",
-    melancholic: "sad emotional piano melancholic"
+    melancholic: "sad emotional piano melancholic",
+    lofi: "lofi hip hop chill beats study",
+    chill: "chillout downtempo relaxed",
+    ambient: "ambient peaceful cinematic soundscapes",
+    pop: "romantic pop acoustic love songs"
   };
   
   const query = searchQueries[mood] || mood;
   
   // Audius requires an API key for search
-  const response = await fetch(
-    `https://api.audius.co/v1/tracks/search?` +
-    `query=${encodeURIComponent(query)}` +
-    `&api_key=${AUDIUS_API_KEY}` +
-    `&limit=${limit}`
-  );
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
   
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Audius API error: ${response.status} - ${errorText}`);
+  try {
+    const response = await fetch(
+      `https://api.audius.co/v1/tracks/search?` +
+      `query=${encodeURIComponent(query)}` +
+      `&api_key=${AUDIUS_API_KEY}` +
+      `&limit=${limit}`,
+      { signal: controller.signal }
+    );
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Audius API error: ${response.status} - ${errorText}`);
+    }
+    
+    const data = await response.json();
+    return data.data;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      console.warn('Audius search timed out after 5s');
+    }
+    throw error;
   }
-  
-  const data = await response.json();
-  return data.data;
 }
 
 export function getStreamUrl(trackId: string) {

@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth-helpers';
 import JourneyViewer from '@/components/journey/JourneyViewer';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   searchParams: Promise<{ id?: string }>;
 }
@@ -45,7 +47,7 @@ export default async function PreviewPage({ searchParams }: PageProps) {
   const { s3Client } = await import('@/lib/s3');
 
   const photosWithSignedUrls = await Promise.all(
-    journey.photos.map(async (photo) => {
+    journey.photos.map(async (photo: any) => {
       let signedUrl = photo.imageUrl;
 
       if (photo.imageUrl.includes('/storage/v1/object/public/')) {

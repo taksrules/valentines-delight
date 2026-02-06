@@ -35,10 +35,10 @@ export default function DashboardOverview({ latestJourneys, onDeleteJourney }: D
       {/* Latest Journeys section */}
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+          <h2 className="text-2xl font-semibold text-neutral-900 dark:text-white">
             Latest Moments
           </h2>
-          <Link href="/dashboard?tab=journeys" className="text-rose-500 dark:text-rose-400 font-bold hover:underline">
+          <Link href="/dashboard?tab=journeys" className="text-sm font-medium text-rose-500 hover:text-rose-600 transition-colors">
             View all →
           </Link>
         </div>
@@ -62,15 +62,15 @@ export default function DashboardOverview({ latestJourneys, onDeleteJourney }: D
       <section className="bg-rose-500/5 dark:bg-rose-500/10 rounded-2xl p-8 border border-rose-500/20">
         <div className="flex flex-col md:flex-row items-center gap-8">
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-2">
+            <h3 className="text-base font-semibold text-rose-600 dark:text-rose-400 mb-2">
               Pro Tip: Use high-quality photos! 📸
             </h3>
-            <p className="text-neutral-600 dark:text-neutral-300">
+            <p className="text-sm font-normal text-neutral-600 dark:text-neutral-400">
               Journeys with 4 or more photos get 3x more emotional engagement. Try to pick moments that tell a story.
             </p>
           </div>
           <Link href="/create">
-            <button className="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-2xl font-bold shadow-xl shadow-rose-500/20 transition-all">
+            <button className="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-2xl font-medium shadow-xl shadow-rose-500/20 transition-all">
               Inspire Someone Now
             </button>
           </Link>

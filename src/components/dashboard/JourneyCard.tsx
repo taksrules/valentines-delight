@@ -102,12 +102,11 @@ export default function JourneyCard({ journey, onDelete }: JourneyCardProps) {
       {/* Content */}
       <div className="p-5">
         {/* Title */}
-        <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
+        <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
           For {journey.recipientName}
         </h3>
 
-        {/* Meta Info */}
-        <div className="flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+        <div className="flex items-center gap-4 text-sm font-normal text-neutral-500 dark:text-neutral-400 mb-4">
           <div className="flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -127,14 +126,14 @@ export default function JourneyCard({ journey, onDelete }: JourneyCardProps) {
         <div className="flex items-center gap-2">
           {journey.status === 'draft' ? (
             <Link href={`/create?id=${journey.id}`} className="flex-1">
-              <button className="w-full px-4 py-2 bg-rose-500 text-white rounded-lg font-medium hover:bg-rose-600 transition-colors dark:bg-rose-400 dark:text-neutral-950 dark:hover:bg-rose-500">
+              <button className="w-full px-4 py-2 bg-rose-500 text-white rounded-lg font-medium transition-colors">
                 Continue Editing
               </button>
             </Link>
           ) : (
             <>
               <Link href={`/j/${journey.uniqueSlug}`} className="flex-1">
-                <button className="w-full px-4 py-2 bg-rose-500 text-white rounded-lg font-medium hover:bg-rose-600 transition-colors dark:bg-rose-400 dark:text-neutral-950 dark:hover:bg-rose-500">
+                <button className="w-full px-4 py-2 bg-rose-500 text-white rounded-lg font-medium transition-colors">
                   View Journey
                 </button>
               </Link>
@@ -172,10 +171,10 @@ export default function JourneyCard({ journey, onDelete }: JourneyCardProps) {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white dark:bg-neutral-900 rounded-xl p-6 max-w-md w-full border border-neutral-200 dark:border-neutral-800"
           >
-            <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
+            <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-2">
               Delete Journey?
             </h3>
-            <p className="text-neutral-600 dark:text-neutral-300 mb-6">
+            <p className="text-base font-normal text-neutral-600 dark:text-neutral-400 mb-6">
               Are you sure you want to delete the journey for {journey.recipientName}? This action cannot be undone.
             </p>
             <div className="flex gap-3">

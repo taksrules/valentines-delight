@@ -39,8 +39,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   const [monthlyLimit] = useState(1); // Free tier limit from MVP
 
   const stats = useMemo(() => {
-    const totalViews = journeys.reduce((acc, curr) => acc + curr.viewCount, 0);
-    const publishedCount = journeys.filter(j => j.status === 'published' || j.status === 'completed').length;
+    const totalViews = journeys.reduce((acc, curr) => acc + (curr?.viewCount || 0), 0);
+    const publishedCount = journeys.filter(j => j && (j.status === 'published' || j.status === 'completed')).length;
+
     const remaining = Math.max(0, monthlyLimit - publishedCount);
     
     return {
