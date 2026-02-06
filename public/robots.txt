@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /create
+Disallow: /create/*
+Disallow: /api/
+Disallow: /api/*
+
+Sitemap: https://tenderly.space/sitemap.xml

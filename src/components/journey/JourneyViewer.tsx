@@ -23,7 +23,11 @@ interface Journey {
   successPhotoUrl: string | null;
   referralCode: string | null;
   allowSharing: boolean;
-  retryCount: number;
+  musicTrack?: {
+    audiusTrackId: string;
+    title: string;
+    artist: string;
+  } | null;
   questions: Array<{
     id: string;
     questionText: string;
@@ -114,7 +118,8 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
       {journey.musicEnabled && (
         <BackgroundMusic
           autoPlay={journey.musicAutoPlay}
-          occasionType={journey.occasionType}
+          mood={journey.musicMood || journey.occasionType}
+          initialTrack={journey.musicTrack}
         />
       )}
 

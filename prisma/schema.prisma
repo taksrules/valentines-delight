@@ -140,8 +140,9 @@ model Journey {
   
   // Media Configuration
   musicEnabled      Boolean   @default(true)
-  musicTrackId      String?   // Jamendo track ID
-  musicMood         String?   // romantic | playful | nostalgic
+  musicTrackId      String?   // Database ID of selected MusicTrack
+  musicTrack        MusicTrack? @relation(fields: [musicTrackId], references: [id], onDelete: SetNull)
+  musicMood         String?   // romantic | playful | nostalgic | etc.
   musicAutoPlay     Boolean   @default(false) // Auto-play vs opt-in prompt
   
   // Big Question Configuration (Phase 1)
@@ -652,6 +653,21 @@ model AuditLog {
   @@index([resourceType, resourceId])
   @@index([timestamp])
   @@map("audit_logs")
+}
+
+model MusicTrack {
+  id              String   @id @default(cuid())
+  audiusTrackId   String   @map("audius_track_id")
+  title           String   @map("track_title")
+  artist          String   @map("artist_name")
+  mood            String
+  duration        Int?     // in seconds
+  artworkUrl      String?  @map("artwork_url")
+  createdAt       DateTime @default(now()) @map("created_at")
+  
+  journeys        Journey[]
+
+  @@map("music_tracks")
 }
 
 model FeatureFlag {

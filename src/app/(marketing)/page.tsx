@@ -7,20 +7,35 @@ import FinalCTA from '@/components/landing/FinalCTA';
 import Footer from '@/components/ui/Footer';
 
 export const metadata: Metadata = {
-  title: 'Emotional Moments - Turn Your Love Story Into An Unforgettable Journey',
-  description: 'Create a personalized, interactive experience that guides them through your memories before asking the big question. Perfect for Valentine\'s Day, proposals, and special moments.',
-  keywords: ['valentine', 'proposal', 'romantic', 'love story', 'digital experience', 'personalized journey'],
+  title: 'Tenderly - Turn Your Love Story Into An Unforgettable Journey',
+  description: 'Create personalized, interactive romantic experiences for proposals, Valentine\'s Day, and anniversaries. Build your moment in 5 minutes - no credit card required.',
+  keywords: ['romantic journey', 'digital proposal', 'valentine gift', 'anniversary surprise', 'interactive love story'],
   openGraph: {
-    title: 'Emotional Moments - Turn Your Love Story Into An Unforgettable Journey',
-    description: 'Create a personalized, interactive experience that guides them through your memories before asking the big question.',
+    title: 'Tenderly - Create Unforgettable Romantic Moments',
+    description: 'Interactive journeys for proposals, Valentine\'s Day, and special moments. Share your love story in a beautiful way.',
+    url: 'https://tenderly.space',
+    siteName: 'Tenderly',
+    images: [
+      {
+        url: 'https://tenderly.space/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Tenderly - Create Romantic Journeys',
+      },
+    ],
+    locale: 'en_US',
     type: 'website',
-    url: 'https://emotionalmoments.app',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Emotional Moments - Turn Your Love Story Into An Unforgettable Journey',
-    description: 'Create a personalized, interactive experience for your special someone.',
-  }
+    title: 'Tenderly - Create Unforgettable Romantic Moments',
+    description: 'Interactive journeys for proposals, Valentine\'s Day, and special moments.',
+    images: ['https://tenderly.space/twitter-card.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function LandingPage() {
