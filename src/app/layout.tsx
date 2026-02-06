@@ -4,6 +4,7 @@ import Providers from "@/components/Providers";
 import NextTopLoader from 'nextjs-toploader';
 import CookieConsent from '@/components/ui/CookieConsent';
 import { Toaster } from 'sonner';
+import { Analytics } from '@vercel/analytics/next';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -80,6 +81,7 @@ export default function RootLayout({
             }
           }}
         />
+        <Analytics />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
