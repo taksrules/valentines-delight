@@ -26,7 +26,7 @@ export default function FinalCTA() {
 
           {/* Subheadline */}
           <p className="max-w-2xl mx-auto text-lg sm:text-xl md:text-2xl text-white/90">
-            Join hundreds of people making their love stories unforgettable
+            Create a meaningful moment they'll cherish forever
           </p>
 
           {/* CTA Buttons */}

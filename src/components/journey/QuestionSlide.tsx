@@ -19,6 +19,7 @@ interface QuestionSlideProps {
   selectedAnswer?: string;
   onAnswer: (answer: string) => void;
   onPrevious: () => void;
+  isSaving?: boolean;
 }
 
 export default function QuestionSlide({
@@ -29,6 +30,7 @@ export default function QuestionSlide({
   selectedAnswer,
   onAnswer,
   onPrevious,
+  isSaving = false,
 }: QuestionSlideProps) {
   const theme = getOccasionTheme(occasionType);
   const gradientClasses = getGradientClasses(occasionType);
@@ -53,8 +55,17 @@ export default function QuestionSlide({
           <ProgressIndicator 
             current={questionNumber - 1} 
             total={totalQuestions} 
-            className="mb-8"
+            className="mb-6"
           />
+
+          {questionNumber === 1 && (
+            <div className="flex items-center gap-2 mb-6 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-100 dark:border-neutral-800">
+              <span className="text-rose-500">❤️</span>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                Your responses are private and will only be shared with {occasionType === 'proposal' ? 'him' : 'the person who created this'}.
+              </p>
+            </div>
+          )}
 
           <h2 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-8">
             {question.questionText}
@@ -74,6 +85,19 @@ export default function QuestionSlide({
                 {option}
               </button>
             ))}
+          </div>
+
+          <div className="h-6 flex items-center justify-center mb-6">
+            {isSaving && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-2 text-xs font-medium text-neutral-400"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                Saving your answer securely...
+              </motion.div>
+            )}
           </div>
 
           {selectedAnswer && question.acknowledgmentText && (

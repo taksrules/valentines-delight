@@ -3,6 +3,7 @@ import { useBuilderStore, type Photo } from '@/stores/builderStore';
 import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { ShimmerImage } from '@/components/ui/Loader';
+import { showError, showInfo } from '@/lib/notifications';
 
 export default function Step5Settings() {
   const {
@@ -36,9 +37,9 @@ export default function Step5Settings() {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
-
+    
     if (file.size > 5 * 1024 * 1024) {
-      alert('Photo is too large. Max 5MB.');
+      showError('Photo is too large', 'Maximum file size is 5MB.');
       return;
     }
 
@@ -69,7 +70,7 @@ export default function Step5Settings() {
       setSuccessPhoto(photo);
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload success photo');
+      showError('Upload failed', 'We couldn\'t save your photo. Please try again.');
       URL.revokeObjectURL(previewUrl);
     } finally {
       setIsUploading(false);
@@ -215,7 +216,7 @@ export default function Step5Settings() {
               onClick={() => {
                 const journeyId = useBuilderStore.getState().journeyId;
                 if (journeyId) window.open(`/create/preview?id=${journeyId}`, '_blank');
-                else alert('Please save your journey first');
+                else showInfo('Save required', 'Please save your journey before previewing.');
               }}
               className="w-full px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
             >

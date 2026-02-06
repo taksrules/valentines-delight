@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Providers from "@/components/Providers";
 import NextTopLoader from 'nextjs-toploader';
 import CookieConsent from '@/components/ui/CookieConsent';
+import { Toaster } from 'sonner';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,16 +26,16 @@ export const metadata: Metadata = {
   description: "Capture and share your most beautiful memories in an interactive journey.",
   icons: {
     icon: [
-      { url: "/images/TenderlyFavIcon.png", sizes: "any" },
-      { url: "/images/TenderlyFavIcon.png", sizes: "512x512", type: "image/png" },
-      { url: "/images/TenderlyFavIcon.png", sizes: "192x192", type: "image/png" },
-      { url: "/images/TenderlyFavIcon.png", sizes: "96x96", type: "image/png" },
-      { url: "/images/TenderlyFavIcon.png", sizes: "64x64", type: "image/png" },
-      { url: "/images/TenderlyFavIcon.png", sizes: "32x32", type: "image/png" },
+      { url: "/images/favicon.png", sizes: "any" },
+      { url: "/images/favicon.png", sizes: "512x512", type: "image/png" },
+      { url: "/images/favicon.png", sizes: "192x192", type: "image/png" },
+      { url: "/images/favicon.png", sizes: "96x96", type: "image/png" },
+      { url: "/images/favicon.png", sizes: "64x64", type: "image/png" },
+      { url: "/images/favicon.png", sizes: "32x32", type: "image/png" },
     ],
-    shortcut: "/images/TenderlyFavIcon.png",
+    shortcut: "/images/favicon.png",
     apple: [
-      { url: "/images/TenderlyFavIcon.png", sizes: "180x180", type: "image/png" },
+      { url: "/images/favicon.png", sizes: "180x180", type: "image/png" },
     ],
   },
   manifest: "/manifest.json",
@@ -63,6 +64,22 @@ export default function RootLayout({
         />
         <Providers>{children}</Providers>
         <CookieConsent />
+        <Toaster 
+          position="top-center"
+          theme="dark"
+          richColors
+          closeButton
+          expand={false}
+          toastOptions={{
+            style: {
+              background: '#1a1a1a',
+              border: '1px solid #2d2d2d',
+              borderRadius: '12px',
+              color: 'white',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            }
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

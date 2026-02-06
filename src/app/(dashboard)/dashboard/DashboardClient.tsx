@@ -8,6 +8,8 @@ import JourneyTimeline from '@/components/dashboard/JourneyTimeline';
 import Container from '@/components/ui/Container';
 import JourneyCardSkeleton from '@/components/dashboard/JourneyCardSkeleton';
 import { Shimmer } from '@/components/ui/Loader';
+import { getQuotaForTier } from '@/lib/quotas';
+import { showError, showSuccess } from '@/lib/notifications';
 
 interface Journey {
   id: string;
@@ -23,6 +25,7 @@ interface User {
   id: string;
   name?: string | null;
   email?: string | null;
+  subscriptionTier?: string;
 }
 
 interface DashboardClientProps {
@@ -36,13 +39,15 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   
   const [journeys, setJourneys] = useState<Journey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [monthlyLimit] = useState(1); // Free tier limit from MVP
+  
+  const quota = useMemo(() => getQuotaForTier(user.subscriptionTier), [user.subscriptionTier]);
+  const monthlyLimit = quota.publishedJourneys;
 
   const stats = useMemo(() => {
     const totalViews = journeys.reduce((acc, curr) => acc + (curr?.viewCount || 0), 0);
     const publishedCount = journeys.filter(j => j && (j.status === 'published' || j.status === 'completed')).length;
 
-    const remaining = Math.max(0, monthlyLimit - publishedCount);
+    const remaining = monthlyLimit === -1 ? Infinity : Math.max(0, monthlyLimit - publishedCount);
     
     return {
       total: journeys.length,
@@ -78,9 +83,13 @@ export default function DashboardClient({ user }: DashboardClientProps) {
 
       if (response.ok) {
         setJourneys(journeys.filter(j => j.id !== id));
+        showSuccess('Journey deleted');
+      } else {
+        showError('Safe failure', 'We couldn\'t delete this journey. Please try again.');
       }
     } catch (error) {
       console.error('Failed to delete journey:', error);
+      showError('Connection error', 'Couldn\'t connect to the server to delete the journey.');
     }
   };
 

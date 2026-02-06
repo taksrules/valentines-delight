@@ -75,7 +75,7 @@ export default function WelcomeScreen({ recipientName, creatorName, occasionType
           onComplete={() => setTimeout(() => setShowButton(true), 500)}
         >
           <div className="space-y-4">
-            <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200">
+            <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200 font-romantic">
               {retryMessage || welcomeMessage}
             </p>
           </div>

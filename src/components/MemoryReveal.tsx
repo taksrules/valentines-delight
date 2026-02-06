@@ -43,7 +43,7 @@ export default function MemoryReveal({ photos, occasionType, onComplete }: Memor
           <h2 className="text-3xl md:text-4xl mb-4 text-neutral-800 dark:text-neutral-100">
             Remember these moments? 💭
           </h2>
-          <p className="text-xl text-neutral-600 dark:text-neutral-200">
+          <p className="text-xl text-neutral-600 dark:text-neutral-200 font-romantic">
             Each one special in its own way...
           </p>
         </AnimatedText>

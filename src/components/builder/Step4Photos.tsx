@@ -5,6 +5,7 @@ import { useBuilderStore, type Photo } from '@/stores/builderStore';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { ShimmerImage } from '@/components/ui/Loader';
+import { showError, showWarning } from '@/lib/notifications';
 import {
   DndContext,
   closestCenter,
@@ -53,13 +54,13 @@ export default function Step4Photos() {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
       if (photos.length >= 6) {
-        alert('Maximum 6 photos allowed');
+        showWarning('Photo limit reached', 'Maximum 6 photos allowed per journey.');
         break;
       }
 
       // Validate file
       if (file.size > 5 * 1024 * 1024) {
-        alert(`${file.name} is too large. Max 5MB per photo.`);
+        showError('File too large', `${file.name} is larger than the 5MB limit.`);
         continue;
       }
 
@@ -97,7 +98,7 @@ export default function Step4Photos() {
         addPhoto(photo);
       } catch (error) {
         console.error('Upload error:', error);
-        alert(`Failed to upload ${file.name}`);
+        showError('Upload failed', `We couldn't upload ${file.name}. Please try again.`);
         // Clean up preview URL on error
         URL.revokeObjectURL(previewUrl);
       } finally {

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Hero from '@/components/landing/Hero';
 import HowItWorks from '@/components/landing/HowItWorks';
 import Features from '@/components/landing/Features';
-import Testimonials from '@/components/landing/Testimonials';
+import TrustBuilders from '@/components/landing/TrustBuilders';
 import FinalCTA from '@/components/landing/FinalCTA';
 import Footer from '@/components/ui/Footer';
 
@@ -44,7 +44,7 @@ export default function LandingPage() {
       <Hero />
       <HowItWorks />
       <Features />
-      <Testimonials />
+      <TrustBuilders />
       <FinalCTA />
       <Footer />
     </main>

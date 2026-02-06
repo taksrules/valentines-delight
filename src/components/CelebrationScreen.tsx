@@ -10,6 +10,7 @@ import { getOccasionTheme, formatMessage, getGradientClasses } from '@/lib/occas
 import { MemoryPhoto } from '../app/types';
 import { useRef } from 'react';
 import Link from 'next/link';
+import { showError, showInfo, showSuccess } from '@/lib/notifications';
 
 interface CelebrationScreenProps {
   journeyId?: string | null;
@@ -90,7 +91,7 @@ export default function CelebrationScreen({
 
   const handleShare = async () => {
     if (!journeyId) {
-      alert('Sharing is only available for published journeys.');
+      showInfo('Sharing is for live journeys', 'Publish your journey first to generate a high-res share card.');
       return;
     }
     
@@ -112,9 +113,10 @@ export default function CelebrationScreen({
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      showSuccess('Moment captured! 📸', 'Your share-ready memory has been downloaded.');
     } catch (err) {
       console.error('Failed to generate sharing image:', err);
-      alert('Failed to generate high-res share image. Please try again.');
+      showError('Couldn\'t capture moment', 'We had trouble generating your share image. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -212,13 +214,13 @@ export default function CelebrationScreen({
         </motion.div>
         
         <AnimatedText delay={0.5} duration={1}>
-          <h2 className="text-4xl md:text-5xl mb-6 text-neutral-800 dark:text-neutral-100">
+          <h2 className="text-4xl md:text-5xl mb-6 text-neutral-800 dark:text-neutral-100 font-romantic">
             You said YES!
           </h2>
         </AnimatedText>
         
         <AnimatedText delay={1.2} duration={1}>
-          <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200">
+          <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200 font-romantic">
             {message}
           </p>
         </AnimatedText>

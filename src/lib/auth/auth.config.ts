@@ -24,7 +24,9 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isDashboard = nextUrl.pathname.startsWith('/dashboard');
-      if (isDashboard) {
+      const isPreview = nextUrl.pathname.startsWith('/preview');
+      
+      if (isDashboard || isPreview) {
         if (isLoggedIn) return true;
         return false; // Redirect to login
       }

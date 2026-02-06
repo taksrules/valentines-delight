@@ -140,6 +140,7 @@ model Journey {
   
   // Media Configuration
   musicEnabled      Boolean   @default(true)
+  responsesAvailable Boolean  @default(false)
   musicTrackId      String?   // Database ID of selected MusicTrack
   musicTrack        MusicTrack? @relation(fields: [musicTrackId], references: [id], onDelete: SetNull)
   musicMood         String?   // romantic | playful | nostalgic | etc.
@@ -182,6 +183,7 @@ model Journey {
   photos            JourneyPhoto[]
   analytics         JourneyAnalytics[]
   deliveries        JourneyDelivery[] // Omnichannel deliveries (Phase 4)
+  answers           JourneyAnswer[]
 
   @@index([creatorId])
   @@index([uniqueSlug])
@@ -217,6 +219,7 @@ model JourneyQuestion {
   aiGenerated         Boolean  @default(false)
   
   createdAt           DateTime @default(now())
+  answers             JourneyAnswer[]
 
   @@index([journeyId])
   @@index([questionOrder])
@@ -692,4 +695,21 @@ model FeatureFlag {
 
   @@index([key])
   @@map("feature_flags")
+}
+
+model JourneyAnswer {
+  id              String   @id @default(cuid())
+  journeyId       String
+  journey         Journey  @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  questionId      String
+  question        JourneyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  answerText      String   @db.Text
+  answeredAt      DateTime @default(now())
+  viewerHasSeen   Boolean  @default(false)
+
+  @@index([journeyId])
+  @@index([questionId])
+  @@index([viewerHasSeen])
+  @@map("journey_answers")
 }
