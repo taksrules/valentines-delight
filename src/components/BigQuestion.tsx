@@ -63,7 +63,7 @@ export default function BigQuestion({ questionText, occasionType, onYes, onNo, r
         </AnimatedText>
         
         <AnimatedText delay={0.8}>
-          <h1 className="text-5xl md:text-7xl mb-8 text-neutral-800 dark:text-neutral-100">
+          <h1 className="text-4xl md:text-6xl mb-8 text-neutral-800 dark:text-neutral-100 font-romantic leading-tight">
             {questionText}
           </h1>
         </AnimatedText>

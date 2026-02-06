@@ -26,7 +26,8 @@ export default function Hero() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm shadow-sm border border-rose-100 dark:border-rose-400/30 dark:bg-neutral-900">
             <span className="text-xl">💕</span>
-            <span className="text-sm font-medium text-rose-600 dark:text-rose-300">Perfect for Valentine's Day 2025</span>
+            <span className="text-xl">💕</span>
+            <span className="text-sm font-medium text-rose-600 dark:text-rose-300">Launching Valentine's Day 2026</span>
           </div>
 
           {/* Headline */}
@@ -55,7 +56,7 @@ export default function Hero() {
 
           {/* Trust indicators */}
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            ✨ No credit card required • Free forever • Ready in 5 minutes
+            ✨ Made with care for meaningful moments • Ready in 5 minutes
           </p>
         </motion.div>
 

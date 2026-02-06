@@ -212,13 +212,13 @@ export default function CelebrationScreen({
         </motion.div>
         
         <AnimatedText delay={0.5} duration={1}>
-          <h2 className="text-4xl md:text-5xl mb-6 text-neutral-800 dark:text-neutral-100">
+          <h2 className="text-4xl md:text-5xl mb-6 text-neutral-800 dark:text-neutral-100 font-romantic">
             You said YES!
           </h2>
         </AnimatedText>
         
         <AnimatedText delay={1.2} duration={1}>
-          <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200">
+          <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200 font-romantic">
             {message}
           </p>
         </AnimatedText>
