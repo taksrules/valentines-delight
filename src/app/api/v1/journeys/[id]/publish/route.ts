@@ -60,6 +60,19 @@ export async function POST(
     // Generate unique slug
     const slug = await generateUniqueSlug(journey.recipientName, journey.occasionType);
 
+    // Select a random curated music track based on mood
+    const mood = journey.musicMood || 'romantic';
+    const curatedTracks = await prisma.musicTrack.findMany({
+      where: { mood }
+    });
+    
+    let selectedTrackId = journey.musicTrackId;
+    
+    if (curatedTracks.length > 0 && !journey.musicTrackId) {
+      const randomTrack = curatedTracks[Math.floor(Math.random() * curatedTracks.length)];
+      selectedTrackId = randomTrack.id;
+    }
+
     // Publish journey
     const published = await prisma.journey.update({
       where: { id },
@@ -67,6 +80,7 @@ export async function POST(
         status: 'published',
         uniqueSlug: slug,
         referralCode: journey.referralCode || (await generateReferralCode()),
+        musicTrackId: selectedTrackId,
         publishedAt: new Date(),
       }
     });

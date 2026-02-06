@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Providers from "@/components/Providers";
 import NextTopLoader from 'nextjs-toploader';
@@ -15,8 +15,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: "Emotional Moments 💕",
+  title: "Tenderly 💕",
   description: "Capture and share your most beautiful memories in an interactive journey.",
   icons: {
     icon: [
@@ -58,6 +63,23 @@ export default function RootLayout({
         />
         <Providers>{children}</Providers>
         <CookieConsent />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Tenderly',
+              url: 'https://tenderly.space',
+              logo: 'https://tenderly.space/logo.png',
+              description: 'Platform for creating interactive romantic experiences',
+              sameAs: [
+                'https://twitter.com/tenderly',
+                'https://instagram.com/tenderly',
+              ],
+            }),
+          }}
+        />
       </body>
     </html>
   );

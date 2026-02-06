@@ -23,6 +23,7 @@ export default async function JourneyPage({ params }: PageProps) {
       photos: {
         orderBy: { photoOrder: 'asc' },
       },
+      musicTrack: true,
     },
   });
 

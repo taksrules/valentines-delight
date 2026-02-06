@@ -145,7 +145,7 @@ export default function DemoPage() {
       {DEMO_DATA.musicEnabled && (
         <BackgroundMusic
           autoPlay={true}
-          occasionType={DEMO_DATA.occasionType}
+          mood="romantic"
         />
       )}
 
