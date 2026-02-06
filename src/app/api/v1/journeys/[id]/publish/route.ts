@@ -35,6 +35,46 @@ export async function POST(
       );
     }
 
+    // Quota Enforcement
+    const { getQuotaForTier } = await import('@/lib/quotas');
+    const user = await prisma.user.findUnique({
+      where: { id: session!.user!.id },
+      select: { subscriptionTier: true }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: { code: 'USER_NOT_FOUND', message: 'User not found' } },
+        { status: 404 }
+      );
+    }
+
+    const quota = getQuotaForTier(user.subscriptionTier);
+
+    if (quota.publishedJourneys !== -1) {
+      const publishedCount = await prisma.journey.count({
+        where: {
+          creatorId: session!.user!.id,
+          status: 'published',
+          deletedAt: null,
+          NOT: { id: journey.id } // Don't count the current journey if it's already published
+        }
+      });
+
+      if (publishedCount >= quota.publishedJourneys) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'QUOTA_EXCEEDED',
+              message: `You've reached the ${user.subscriptionTier} tier limit of ${quota.publishedJourneys} published journey. Please upgrade to create more magic.`
+            }
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     // Validate journey is complete
     if (!journey.recipientName) {
       return NextResponse.json(

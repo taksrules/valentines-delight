@@ -62,6 +62,7 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [noClickCount, setNoClickCount] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
   
   const theme = getOccasionTheme(journey.occasionType);
 
@@ -88,8 +89,24 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
     }
   };
 
-  const handleAnswer = (questionId: string, answer: string) => {
+  const handleAnswer = async (questionId: string, answer: string) => {
     setResponses({ ...responses, [questionId]: answer });
+    
+    if (!isPreview) {
+      setIsSaving(true);
+      try {
+        await fetch(`/api/v1/journeys/${journey.id}/responses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questionId, answerText: answer }),
+        });
+      } catch (e) {
+        console.error('Failed to save response:', e);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+    
     setTimeout(handleNext, 2500); // Give time to read acknowledgment
   };
 
@@ -102,7 +119,14 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
     }
   };
 
-  const handleYesClick = () => {
+  const handleYesClick = async () => {
+    if (!isPreview) {
+      try {
+        await fetch(`/api/v1/journeys/${journey.id}/complete`, { method: 'POST' });
+      } catch (e) {
+        console.error('Failed to mark journey as complete:', e);
+      }
+    }
     handleNext();
   };
 
@@ -121,6 +145,21 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
           mood={journey.musicMood || journey.occasionType}
           initialTrack={journey.musicTrack}
         />
+      )}
+
+      {/* Preview Banner */}
+      {isPreview && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 bg-black/80 backdrop-blur-md rounded-full border border-white/20 shadow-2xl flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+            </span>
+            <span className="text-[10px] font-bold text-white uppercase tracking-widest">Preview Mode</span>
+          </div>
+          <div className="w-[1px] h-3 bg-white/20" />
+          <p className="text-[10px] text-neutral-300 font-medium whitespace-nowrap">Editing your magic... ✨</p>
+        </div>
       )}
 
       <AnimatePresence mode="wait">
@@ -145,6 +184,7 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
             selectedAnswer={responses[journey.questions[currentSlide.index].id]}
             onAnswer={(answer: string) => handleAnswer(journey.questions[currentSlide.index!].id, answer)}
             onPrevious={handlePrevious}
+            isSaving={isSaving}
           />
         )}
 

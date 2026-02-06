@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Providers from "@/components/Providers";
 import NextTopLoader from 'nextjs-toploader';
 import CookieConsent from '@/components/ui/CookieConsent';
+import { Toaster } from 'sonner';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -63,6 +64,22 @@ export default function RootLayout({
         />
         <Providers>{children}</Providers>
         <CookieConsent />
+        <Toaster 
+          position="top-center"
+          theme="dark"
+          richColors
+          closeButton
+          expand={false}
+          toastOptions={{
+            style: {
+              background: '#1a1a1a',
+              border: '1px solid #2d2d2d',
+              borderRadius: '12px',
+              color: 'white',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            }
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

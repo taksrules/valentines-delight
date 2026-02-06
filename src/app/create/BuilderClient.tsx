@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { useBuilderStore } from '@/stores/builderStore';
+import { showError, showSuccess, showUpgradePrompt, showLoadingPromise } from '@/lib/notifications';
 import StepIndicator from '@/components/builder/StepIndicator';
 import { QRCodeCanvas } from 'qrcode.react';
 import Step1Occasion from '@/components/builder/Step1Occasion';
@@ -97,9 +99,13 @@ export default function BuilderClient({ user }: BuilderClientProps) {
   const handleNext = async (token?: string) => {
     if (!canProceed()) return;
 
+    const isHighStakes = currentStep === 2 || currentStep === 5;
+    const loadingToast = isHighStakes ? toast.loading('Saving your journey...') : null;
+
     try {
       // If first save (creating journey) and no token provided, trigger Turnstile
       if (currentStep >= 2 && recipientName && !journeyId && !token && !turnstileToken) {
+        if (loadingToast) toast.dismiss(loadingToast);
         setShowTurnstile(true);
         return;
       }
@@ -107,6 +113,10 @@ export default function BuilderClient({ user }: BuilderClientProps) {
       // Only save if we have recipient name (after Step 2)
       if (currentStep >= 2 && recipientName) {
         await saveProgress(token || turnstileToken || undefined);
+        if (loadingToast) {
+          toast.dismiss(loadingToast);
+          showSuccess('Progress saved');
+        }
       }
 
       if (currentStep < 5) {
@@ -114,7 +124,8 @@ export default function BuilderClient({ user }: BuilderClientProps) {
       }
     } catch (error: any) {
       console.error('Error saving progress:', error);
-      alert(error.message || 'Failed to save progress. Please try again.');
+      if (loadingToast) toast.dismiss(loadingToast);
+      showError('Couldn\'t save progress', error.message || 'Please check your connection and try again.');
       setTurnstileToken(null);
       setShowTurnstile(false);
     }
@@ -127,21 +138,38 @@ export default function BuilderClient({ user }: BuilderClientProps) {
   };
 
   const handlePublish = async () => {
-    setIsPublishing(true);
-    
     // Final save
     await saveProgress(turnstileToken || undefined);
 
-    // Publish
-    const result = await publishJourney();
+    const loadingToast = toast.loading('Sharing your magic with the world...');
+    setIsPublishing(true);
 
-    setIsPublishing(false);
+    try {
+      const result = await publishJourney();
+      toast.dismiss(loadingToast);
+      setIsPublishing(false);
 
-    if (result.success && result.slug) {
-      setPublishedSlug(result.slug);
-      setShowSuccessModal(true);
-    } else {
-      alert(result.error || 'Failed to publish journey');
+      if (result.success && result.slug) {
+        showSuccess('Journey is live! 🎉', 'Your magical experience is ready to share.');
+        setPublishedSlug(result.slug);
+        setShowSuccessModal(true);
+      } else {
+        const error = result.error as any;
+        if (error && error.code === 'QUOTA_EXCEEDED') {
+          showUpgradePrompt(
+            'You\'ve reached your publishing limit.', 
+            () => router.push('/dashboard?tab=upgrade'),
+            () => router.push('/dashboard')
+          );
+        } else {
+          showError('Failed to publish', typeof error === 'string' ? error : (error?.message || 'Something went wrong.'));
+        }
+      }
+    } catch (error) {
+      console.error('Publish error:', error);
+      toast.dismiss(loadingToast);
+      setIsPublishing(false);
+      showError('Failed to publish', 'Something went wrong. Please try again.');
     }
   };
 
@@ -248,7 +276,7 @@ export default function BuilderClient({ user }: BuilderClientProps) {
 
             {currentStep < 5 ? (
               <Button
-                onClick={handleNext}
+                onClick={() => handleNext()}
                 disabled={!canProceed()}
                 isLoading={isSaving}
               >
@@ -256,7 +284,7 @@ export default function BuilderClient({ user }: BuilderClientProps) {
               </Button>
             ) : (
               <Button
-                onClick={handlePublish}
+                onClick={() => handlePublish()}
                 disabled={!canProceed()}
                 isLoading={isPublishing || isSaving}
               >
@@ -288,7 +316,7 @@ export default function BuilderClient({ user }: BuilderClientProps) {
               handleNext(token);
             }}
             onError={(error: string) => {
-              alert(error);
+              showError('Verification failed', error);
               setShowTurnstile(false);
             }}
           />
@@ -299,14 +327,12 @@ export default function BuilderClient({ user }: BuilderClientProps) {
 
 // Success Modal Component
 function SuccessModal({ slug, onClose }: { slug: string; onClose: () => void }) {
-  const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const link = `${window.location.origin}/j/${slug}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(link);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    showSuccess('Link copied! 📋');
   };
 
   const downloadQRCode = () => {
@@ -379,7 +405,7 @@ function SuccessModal({ slug, onClose }: { slug: string; onClose: () => void }) 
                 onClick={handleCopy}
                 className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-rose-200 dark:shadow-none"
               >
-                {copied ? '✓' : 'Copy'}
+                Copy
               </button>
             </div>
           </div>

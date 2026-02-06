@@ -187,7 +187,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         successPhotoUrl: state.successPhoto?.imageUrl,
       };
 
-      if (turnstileToken) {
+      if (turnstileToken && typeof turnstileToken === 'string') {
         journeyData.turnstileToken = turnstileToken;
       }
 
@@ -314,7 +314,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         return { success: true, slug: data.slug };
       }
 
-      return { success: false, error: data.error?.message };
+      return { success: false, error: data.error };
     } catch (error) {
       console.error('Failed to publish:', error);
       return { success: false, error: 'Failed to publish journey' };

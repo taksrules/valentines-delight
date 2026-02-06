@@ -25,7 +25,13 @@ export function InvisibleTurnstile({
     turnstileRef.current?.execute()
   }, [])
 
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  // Use testing key in development to avoid "Domain Not Allowed" error 110200
+  const isLocal = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  
+  const siteKey = (process.env.NODE_ENV === 'development' || isLocal)
+    ? '1x00000000000000000000AA' // Cloudflare "Always Pass" Testing Key
+    : process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
   if (!siteKey) {
     console.error('[TURNSTILE] Site key not configured')
