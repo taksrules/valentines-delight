@@ -16,8 +16,8 @@ export const CACHE_TTL = {
  * Generates a signed URL with tiered expiration based on journey status.
  * Published/Completed journeys get long-lived URLs to enable effective CDN caching.
  */
-export async function getTieredSignedUrl(imageUrl: string | null | undefined, status: string) {
-  if (!imageUrl) return imageUrl;
+export async function getTieredSignedUrl(imageUrl: string | null | undefined, status: string): Promise<string | null> {
+  if (!imageUrl) return null;
   
   const isPublished = status === 'published' || status === 'completed';
   const expiresIn = isPublished ? SIGNED_URL_EXPIRY.PUBLISHED : SIGNED_URL_EXPIRY.DRAFT;
