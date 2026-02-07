@@ -31,7 +31,7 @@ export default function FinalCTA() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center sm:items-stretch">
-            <Link href="/signup" className="block w-full sm:w-auto">
+            <Link href="/sign-up" className="block w-full sm:w-auto">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
