@@ -223,15 +223,15 @@ export default function CelebrationScreen({
           <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200 font-romantic">
             {message}
           </p>
+          {retryCount > 0 && (
+            <p className="text-lg text-rose-400 dark:text-rose-300 italic mt-4">
+              {retryCount >= 3 
+                ? "I never doubted you for a second 😉" 
+                : "Worth the wait! 😊"}
+            </p>
+          )}
         </AnimatedText>
         
-        {!isFirstTime && retryCount > 0 && (
-          <AnimatedText delay={2} duration={0.8}>
-            <p className="text-lg text-rose-400 dark:text-rose-300 italic">
-              (Worth the wait! 😊)
-            </p>
-          </AnimatedText>
-        )}
         
         {/* Photo Gallery - Shows all the memories again */}
         {showPhotos && (

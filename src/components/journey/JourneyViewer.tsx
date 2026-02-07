@@ -8,7 +8,9 @@ import MemoryReveal from '@/components/MemoryReveal';
 import CelebrationScreen from '@/components/CelebrationScreen';
 import BackgroundMusic from '@/components/BackgroundMusic';
 import QuestionSlide from '@/components/journey/QuestionSlide';
+import NoOutcomeScreen from '@/components/NoOutcomeScreen';
 import { getOccasionTheme, formatMessage } from '@/lib/occasion-themes';
+import { useEffect } from 'react';
 
 interface Journey {
   id: string;
@@ -51,7 +53,7 @@ interface JourneyViewerProps {
   isPreview: boolean;
 }
 
-type SlideType = 'welcome' | 'question' | 'photos' | 'bigQuestion' | 'celebration';
+type SlideType = 'welcome' | 'question' | 'photos' | 'bigQuestion' | 'celebration' | 'noOutcome';
 
 interface Slide {
   type: SlideType;
@@ -62,7 +64,16 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [noClickCount, setNoClickCount] = useState(0);
+  const [showNoOutcome, setShowNoOutcome] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Load retryCount from sessionStorage on mount
+  useEffect(() => {
+    const savedRetryCount = sessionStorage.getItem(`journey_retry_${journey.id}`);
+    if (savedRetryCount) {
+      setNoClickCount(parseInt(savedRetryCount, 10));
+    }
+  }, [journey.id]);
   
   const theme = getOccasionTheme(journey.occasionType);
 
@@ -111,18 +122,29 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
   };
 
   const handleNoClick = () => {
-    setNoClickCount(noClickCount + 1);
-    // Loop back to photos
-    const photosIndex = slides.findIndex(s => s.type === 'photos');
-    if (photosIndex !== -1) {
-      setCurrentSlideIndex(photosIndex);
-    }
+    const nextRetryCount = noClickCount + 1;
+    setNoClickCount(nextRetryCount);
+    sessionStorage.setItem(`journey_retry_${journey.id}`, nextRetryCount.toString());
+    
+    // Log analytics (pseudo)
+    console.log('[Analytics] no_clicked', { retryCount: nextRetryCount, timestamp: new Date() });
+
+    setShowNoOutcome(true);
+  };
+
+  const handleNoOutcomeComplete = () => {
+    setShowNoOutcome(false);
+    setCurrentSlideIndex(0); // Return to welcome
   };
 
   const handleYesClick = async () => {
+    sessionStorage.removeItem(`journey_retry_${journey.id}`);
+    
     if (!isPreview) {
       try {
         await fetch(`/api/v1/journeys/${journey.id}/complete`, { method: 'POST' });
+        // Log analytics (pseudo)
+        console.log('[Analytics] yes_clicked', { retryCount: noClickCount, timestamp: new Date() });
       } catch (e) {
         console.error('Failed to mark journey as complete:', e);
       }
@@ -229,6 +251,16 @@ export default function JourneyViewer({ journey, isPreview }: JourneyViewerProps
             allowSharing={journey.allowSharing}
             retryCount={noClickCount}
             onReplay={isPreview ? handleReplay : undefined}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showNoOutcome && (
+          <NoOutcomeScreen
+            retryCount={noClickCount - 1} // 0-based for the screen messages
+            occasionType={journey.occasionType}
+            onComplete={handleNoOutcomeComplete}
           />
         )}
       </AnimatePresence>
