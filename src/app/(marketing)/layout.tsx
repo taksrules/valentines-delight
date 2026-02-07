@@ -6,15 +6,17 @@ export const metadata: Metadata = {
   description: "Create personalized, interactive experiences that guide them through your memories before asking the big question. Perfect for Valentine's Day, proposals, and special moments.",
 };
 
+import { GeistSans } from 'geist/font/sans';
+
 export default function MarketingLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <div className={GeistSans.className}>
       <LandingNav />
       {children}
-    </>
+    </div>
   );
 }
