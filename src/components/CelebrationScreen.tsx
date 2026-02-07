@@ -42,6 +42,7 @@ export default function CelebrationScreen({
   const [showButtons, setShowButtons] = useState(false);
   const [showPhotos, setShowPhotos] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [shareReadyFile, setShareReadyFile] = useState<File | null>(null);
   const theme = getOccasionTheme(occasionType);
   const gradientClasses = getGradientClasses(occasionType);
   
@@ -94,18 +95,37 @@ export default function CelebrationScreen({
       showInfo('Sharing is for live journeys', 'Publish your journey first to generate a high-res share card.');
       return;
     }
+
+    // If we already have the file, trigger native share immediately (direct user gesture)
+    if (shareReadyFile && navigator.share && navigator.canShare && navigator.canShare({ files: [shareReadyFile] })) {
+      try {
+        await navigator.share({
+          files: [shareReadyFile],
+          title: 'My Tenderly Moment 💕',
+          text: 'Look at this beautiful journey we shared! Create yours at tenderly.app',
+        });
+        showSuccess('Shared! 💕', 'Your moment has been shared.');
+        return;
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Share failed:', err);
+        }
+      }
+    }
     
+    // Otherwise, generate it first
     setIsGenerating(true);
     try {
-      const response = await fetch(`/api/v1/journeys/${journeyId}/share-image`, {
-        method: 'POST',
-      });
+      const response = await fetch(`/api/v1/journeys/${journeyId}/share-card`);
 
       if (!response.ok) throw new Error('Generation failed');
 
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const file = new File([blob], `tenderly-moment-${referralCode || 'share'}.png`, { type: 'image/png' });
+      setShareReadyFile(file);
       
+      // Auto-trigger download as fallback/success indicator
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `tenderly-moment-${referralCode || 'share'}.png`;
@@ -113,10 +133,11 @@ export default function CelebrationScreen({
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      showSuccess('Moment captured! 📸', 'Your share-ready memory has been downloaded.');
+      
+      showSuccess('Moment captured! 📸', 'Your high-res memory is ready to share.');
     } catch (err) {
-      console.error('Failed to generate sharing image:', err);
-      showError('Couldn\'t capture moment', 'We had trouble generating your share image. Please try again.');
+      console.error('Failed to generate sharing card:', err);
+      showError('Couldn\'t capture moment', 'We had trouble generating your share card. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -316,12 +337,12 @@ export default function CelebrationScreen({
 
               {allowSharing && (
                 <Button
-                  variant="outline"
+                  variant={shareReadyFile ? "primary" : "outline"}
                   onClick={handleShare}
                   isLoading={isGenerating}
-                  className="text-sm border-rose-300 text-rose-600 hover:bg-rose-50"
+                  className={`text-sm ${!shareReadyFile ? 'border-rose-300 text-rose-600 hover:bg-rose-50' : 'shadow-lg shadow-rose-500/20'}`}
                 >
-                  Share This Moment 📸
+                  {shareReadyFile ? 'Share to Socials 📱' : 'Capture This Moment 📸'}
                 </Button>
               )}
             </motion.div>

@@ -3,7 +3,7 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   // Exclude pg and related packages from bundling to avoid Windows junction point issues
-  serverExternalPackages: ["pg", "pg-native", "@prisma/client", "@aws-sdk/client-s3", "@aws-sdk/s3-request-presigner"],
+  serverExternalPackages: ["pg", "pg-native", "@prisma/client", "@aws-sdk/client-s3", "@aws-sdk/s3-request-presigner", "@resvg/resvg-js"],
   
   images: {
     unoptimized: process.env.NODE_ENV === 'development',
