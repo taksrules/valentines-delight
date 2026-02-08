@@ -28,17 +28,16 @@ export async function verifyTurnstileToken(
   }
 
   // Determine the secret key. 
-  // If the token is the Cloudflare "Always Pass" dummy token or we're in dev, 
-  // we might need the testing secret key.
   const isTestToken = token === 'XXXX.DUMMY.TOKEN.XXXX' || token.startsWith('1x000000')
   const isLocal = process.env.NODE_ENV === 'development'
   
-  const SECRET_KEY = (isTestToken || isLocal)
+  // CRITICAL FIX: Only use test secret if it's a test token or purely local dev WITHOUT a secret set
+  const SECRET_KEY = (isTestToken || (isLocal && !process.env.TURNSTILE_SECRET_KEY))
     ? '1x0000000000000000000000000000000AA' // Cloudflare "Always Pass" Secret Key
     : process.env.TURNSTILE_SECRET_KEY
 
   if (!SECRET_KEY) {
-    console.error('[SECURITY] TURNSTILE_SECRET_KEY not configured')
+    console.error('[SECURITY] TURNSTILE_SECRET_KEY not configured. Falling back to test key (this will fail for production tokens).')
     return { 
       success: false, 
       error: 'Server configuration error' 

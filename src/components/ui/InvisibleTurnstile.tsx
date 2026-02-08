@@ -29,12 +29,17 @@ export function InvisibleTurnstile({
   const isLocal = typeof window !== 'undefined' && 
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   
-  const siteKey = (process.env.NODE_ENV === 'development' || isLocal)
-    ? '1x00000000000000000000AA' // Cloudflare "Always Pass" Testing Key
-    : process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  // CRITICAL: Ensure siteKey matches the logic in lib/turnstile.ts
+  const siteKey = (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !isLocal)
+    ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+    : '1x00000000000000000000AA' // Cloudflare "Always Pass" Testing Key
+
+  if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !isLocal) {
+    console.warn('[TURNSTILE] NEXT_PUBLIC_TURNSTILE_SITE_KEY is missing in production! Using testing key (Always Pass).')
+  }
 
   if (!siteKey) {
-    console.error('[TURNSTILE] Site key not configured')
+    console.error('[TURNSTILE] No site key available.')
     return null
   }
 

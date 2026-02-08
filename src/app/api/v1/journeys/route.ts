@@ -31,7 +31,15 @@ export async function GET() {
     });
 
 
-    const formattedJourneys = await Promise.all(journeys.map(async (journey: any) => {
+    const formattedJourneys = await Promise.all(journeys.map(async (journey: { 
+      id: string, 
+      recipientName: string, 
+      status: string, 
+      uniqueSlug: string | null, 
+      createdAt: Date,
+      _count: { analytics: number },
+      photos: { imageUrl: string }[] 
+    }) => {
       let firstPhotoUrl = journey.photos[0]?.imageUrl || null;
 
       if (firstPhotoUrl) {

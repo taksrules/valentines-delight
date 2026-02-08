@@ -31,19 +31,26 @@ export default function SignInForm() {
     setSuccessMessage(null);
 
     try {
-      // In NextAuth v5, for credentials provider, it's often more reliable 
-      // to let the server handle the redirect to ensure cookies are set correctly
-      const result = await signIn("credentials", {
-        email:email.toLowerCase(),
+      console.log("[LOGIN] Starting sign-in for:", email);
+      
+      // Add a timeout to prevent infinite loader
+      const signInPromise = signIn("credentials", {
+        email: email.toLowerCase(),
         password,
         redirect: true,
         callbackUrl: "/dashboard",
       });
 
-      console.log("Sign in result:", result);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("SIGNIN_TIMEOUT")), 15000)
+      );
+
+      const result = await Promise.race([signInPromise, timeoutPromise]) as any;
+
+      console.log("[LOGIN] Sign in result:", result);
 
       if (result?.error) {
-        console.error("Sign in error:", result.error);
+        console.error("[LOGIN] Sign in error:", result.error);
         if (result.error === "CredentialsSignin") {
           setError("Invalid email or password");
         } else if (result.error === "EmailNotVerified") {
@@ -52,10 +59,16 @@ export default function SignInForm() {
           setError(result.error);
         }
       }
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err: any) {
+      console.error("[LOGIN] Exception during sign-in:", err);
+      if (err.message === "SIGNIN_TIMEOUT") {
+        setError("Sign-in timed out. Please check your internet connection and try again.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     } finally {
       setIsLoading(false);
+      console.log("[LOGIN] Sign-in flow finished");
     }
   };
 
