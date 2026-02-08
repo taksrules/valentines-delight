@@ -22,6 +22,7 @@ export function InvisibleTurnstile({
 
   // Auto-execute on mount
   useEffect(() => {
+    console.error("[TURNSTILE] InvisibleTurnstile mounted. Executing widget...");
     turnstileRef.current?.execute()
   }, [])
 

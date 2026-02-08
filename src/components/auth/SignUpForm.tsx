@@ -24,10 +24,22 @@ export default function SignUpForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [showTurnstile, setShowTurnstile] = useState(false);
+  const turnstileTokenRef = React.useRef<string | null>(null);
+
+  // Emergency: Log every state change to isLoading
+  useEffect(() => {
+    console.error(`[REGISTER] UI State Update - isLoading: ${isLoading}, showTurnstile: ${showTurnstile}`);
+  }, [isLoading, showTurnstile]);
+
+  // Sync ref with state for use in timeouts
+  useEffect(() => {
+    turnstileTokenRef.current = turnstileToken;
+  }, [turnstileToken]);
 
   // Removed brittle useEffect timeout to unify with handleSubmit logic
 
   const handleSubmit = async (e: React.FormEvent, token?: string) => {
+    console.error("[REGISTER] handleSubmit starting. Token passed directly:", !!token);
     e?.preventDefault();
     setError(null);
 
@@ -47,16 +59,18 @@ export default function SignUpForm() {
 
     // 3. Security Check (Turnstile)
     if (!token && !turnstileToken) {
-      console.log("[REGISTER] Initiating security verification...");
+      console.error("[REGISTER] Security check: No token, showing Turnstile widget...");
       setShowTurnstile(true);
       
-      // Safety net: if Turnstile component doesn't respond in 15s, reset manually
+      // Safety net: check the Ref (latest value) after 15s
       setTimeout(() => {
-        if (!turnstileToken && isLoading) {
-          console.error("[REGISTER] Security verification timed out before token generation.");
-          setError("Verification service is slow. Please try again or refresh.");
+        if (!turnstileTokenRef.current && !token) {
+          console.error("[REGISTER] ❌ Security check timed out after 15s");
+          setError("Security verification is taking too long. Please refresh.");
           setIsLoading(false);
           setShowTurnstile(false);
+        } else {
+          console.log("[REGISTER] Timeout cleared: Token exists in Ref.");
         }
       }, 15000);
       return;
