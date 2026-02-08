@@ -45,6 +45,9 @@ export async function verifyTurnstileToken(
   }
 
   try {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
     const response = await fetch(
       'https://challenges.cloudflare.com/turnstile/v0/siteverify',
       {
@@ -55,10 +58,12 @@ export async function verifyTurnstileToken(
         body: JSON.stringify({
           secret: SECRET_KEY,
           response: token,
-          remoteip: ip, // Optional but recommended
+          remoteip: ip,
         }),
+        signal: controller.signal
       }
-    )
+    );
+    clearTimeout(id);
 
     const data = await response.json()
 
