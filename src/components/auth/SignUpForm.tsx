@@ -27,27 +27,27 @@ export default function SignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent, token?: string) => {
     e?.preventDefault();
+    setError(null);
 
+    // 1. Basic Validation First (Instant Feedback)
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
+    // 2. Set Loading State Immediately
+    setIsLoading(true);
+
+    // 3. Security Check (Turnstile)
     // If no token provided and not already verified, trigger Turnstile
     if (!token && !turnstileToken) {
       setShowTurnstile(true);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    // Validate passwords match
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setIsLoading(false);
-      return;
-    }
-
-    // Validate password length
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
-      setIsLoading(false);
+      // Note: Turnstile component will call handleSubmit again via onVerify
       return;
     }
 
@@ -346,6 +346,7 @@ export default function SignUpForm() {
           onError={(error: string) => {
             setError(error);
             setShowTurnstile(false);
+            setIsLoading(false);
           }}
         />
       )}

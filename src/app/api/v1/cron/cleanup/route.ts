@@ -61,7 +61,7 @@ export async function POST(request: Request) {
             }
             return null;
           })
-          .filter((key: any): key is string => !!key);
+          .filter((key:any): key is string => !!key);
 
         if (photoKeys.length > 0) {
           await s3Client.send(new DeleteObjectsCommand({
