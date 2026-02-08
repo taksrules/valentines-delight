@@ -52,7 +52,9 @@ export default function SignUpForm() {
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
+      console.log("[REGISTER] Starting submission for:", email);
+      
+      const registerPromise = fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,6 +67,12 @@ export default function SignUpForm() {
         }),
       });
 
+      // 20 second timeout for registration
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("REGISTER_TIMEOUT")), 20000)
+      );
+
+      const response = await Promise.race([registerPromise, timeoutPromise]) as Response;
       const data = await response.json();
 
       if (!response.ok) {
@@ -80,12 +88,18 @@ export default function SignUpForm() {
 
       // Success - move to step 2
       setCurrentStep(1);
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err: any) {
+      console.error("[REGISTER] Registration error:", err);
+      if (err.message === "REGISTER_TIMEOUT") {
+        setError("Registration timed out. Please check your connection and try again.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
       setTurnstileToken(null);
       setShowTurnstile(false);
     } finally {
       setIsLoading(false);
+      console.log("[REGISTER] Registration flow finished");
     }
   };
 
