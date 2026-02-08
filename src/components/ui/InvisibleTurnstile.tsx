@@ -35,12 +35,15 @@ export function InvisibleTurnstile({
     )
   
   // CRITICAL: Ensure siteKey matches the logic in lib/turnstile.ts
-  const siteKey = (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !isLocal)
-    ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  const rawKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const isKeyValid = rawKey?.startsWith('0x');
+  
+  const siteKey = (isKeyValid && !isLocal)
+    ? rawKey!
     : '1x00000000000000000000AA' // Cloudflare "Always Pass" Testing Key
 
   useEffect(() => {
-    const keySource = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'ENV' : 'MISSING';
+    const keySource = isKeyValid ? 'ENV' : (rawKey ? 'INVALID_STRING' : 'MISSING');
     const keyPreview = siteKey.substring(0, 6) + '...' + siteKey.substring(siteKey.length - 4);
     console.error(`[TURNSTILE] Initializing widget. Host: ${window.location.hostname}, isLocal: ${isLocal}, KeySource: ${keySource}, Key: ${keyPreview}`);
     
@@ -56,7 +59,10 @@ export function InvisibleTurnstile({
       <div className="text-[10px] font-mono text-rose-500 dark:text-rose-400 text-center space-y-1">
         <p>DIAGNOSTIC MODE: {isLocal ? 'DEVELOPMENT' : 'PRODUCTION'}</p>
         <p>HOST: {typeof window !== 'undefined' ? window.location.hostname : 'N/A'}</p>
-        <p>KEY: {siteKey.substring(0, 10)}... (Source: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'ENV' : 'FALLBACK'})</p>
+        {!isKeyValid && !isLocal && (
+          <p className="font-bold text-rose-600 animate-pulse">⚠️ CONFIG ERROR: INVALID SITE KEY FOUND</p>
+        )}
+        <p>KEY: {siteKey.substring(0, 10)}... (Source: {isKeyValid ? 'VALID_ENV' : 'FORCED_TEST_KEY'})</p>
       </div>
 
       <Turnstile
