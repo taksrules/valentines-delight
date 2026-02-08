@@ -34,8 +34,12 @@ export function InvisibleTurnstile({
     ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
     : '1x00000000000000000000AA' // Cloudflare "Always Pass" Testing Key
 
+  if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !isLocal) {
+    console.warn('[TURNSTILE] NEXT_PUBLIC_TURNSTILE_SITE_KEY is missing in production! Using testing key (Always Pass).')
+  }
+
   if (!siteKey) {
-    console.error('[TURNSTILE] Site key not configured')
+    console.error('[TURNSTILE] No site key available.')
     return null
   }
 

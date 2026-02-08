@@ -25,20 +25,7 @@ export default function SignUpForm() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [showTurnstile, setShowTurnstile] = useState(false);
 
-  // CRITICAL: Handle the Turnstile timeout safety to prevent infinite loader
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    if (isLoading && showTurnstile) {
-      // If Turnstile is shown but hasn't verified within 15s, reset
-      timeoutId = setTimeout(() => {
-        console.warn("[REGISTER] Turnstile verification timed out");
-        setError("Security verification is taking too long. Please refresh and try again.");
-        setIsLoading(false);
-        setShowTurnstile(false);
-      }, 15000); 
-    }
-    return () => clearTimeout(timeoutId);
-  }, [isLoading, showTurnstile]);
+  // Removed brittle useEffect timeout to unify with handleSubmit logic
 
   const handleSubmit = async (e: React.FormEvent, token?: string) => {
     e?.preventDefault();
@@ -59,10 +46,19 @@ export default function SignUpForm() {
     setIsLoading(true);
 
     // 3. Security Check (Turnstile)
-    // If no token provided and not already verified, trigger Turnstile
     if (!token && !turnstileToken) {
-      console.log("[REGISTER] Triggering Turnstile verification...");
+      console.log("[REGISTER] Initiating security verification...");
       setShowTurnstile(true);
+      
+      // Safety net: if Turnstile component doesn't respond in 15s, reset manually
+      setTimeout(() => {
+        if (!turnstileToken && isLoading) {
+          console.error("[REGISTER] Security verification timed out before token generation.");
+          setError("Verification service is slow. Please try again or refresh.");
+          setIsLoading(false);
+          setShowTurnstile(false);
+        }
+      }, 15000);
       return;
     }
 
