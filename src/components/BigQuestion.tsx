@@ -17,9 +17,13 @@ export default function BigQuestion({ questionText, occasionType, onYes, onNo, r
   const theme = getOccasionTheme(occasionType);
   const gradientClasses = getGradientClasses(occasionType);
   
-  const subtext = retryCount > 0 
-    ? `We've been through this ${retryCount} time${retryCount > 1 ? 's' : ''} already...`
-    : 'After everything we\'ve shared...';
+  const subtext = retryCount === 0 
+    ? "After everything we've shared..."
+    : retryCount === 1
+    ? "(Worth another look? 💕)"
+    : retryCount === 2
+    ? "(I'm not giving up that easily 😊)"
+    : "(You know you want to say yes...)";
   
   return (
     <div className={`min-h-screen flex items-center justify-center p-6 relative z-10 ${gradientClasses}`}>

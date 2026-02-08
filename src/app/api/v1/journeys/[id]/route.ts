@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
+import { getTieredSignedUrl, getCacheHeaders } from '@/lib/storage';
 
 // DELETE /api/v1/journeys/[id] - Soft delete journey
 export async function DELETE(
@@ -33,7 +34,10 @@ export async function DELETE(
 
     await prisma.journey.update({
       where: { id },
-      data: { deletedAt: new Date() }
+      data: { 
+        deletedAt: new Date(),
+        status: 'deleted' // Explicitly mark for hard-delete pipeline
+      }
     });
 
     return NextResponse.json({
@@ -92,53 +96,9 @@ export async function GET(
       );
     }
 
-    // Generate signed URLs for photos (following audio pattern)
-    const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-    const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-    const { s3Client } = await import('@/lib/s3');
-
     const photosWithSignedUrls = await Promise.all(
-      journey.photos.map(async (photo) => {
-        let signedUrl = photo.imageUrl;
-
-        // If it's a Supabase Storage URL, generate signed URL
-        if (photo.imageUrl.includes('/storage/v1/object/public/')) {
-          try {
-            const urlObj = new URL(photo.imageUrl);
-            const parts = urlObj.pathname.split('/public/');
-
-            if (parts.length > 1) {
-              const fullPath = parts[1]; // "journey-photos/userId/filename.jpg"
-              const pathParts = fullPath.split('/');
-              const bucket = pathParts[0]; // "journey-photos"
-              const key = pathParts.slice(1).join('/'); // "userId/filename.jpg"
-
-              if (bucket && key) {
-                const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-                signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // 1 hour
-              }
-            }
-          } catch (e) {
-            console.error('[GET journey] Failed to sign photo URL:', e);
-            // Keep original URL as fallback
-          }
-        }
-        // Handle already-signed S3 URLs or direct storage paths
-        else if (photo.imageUrl.includes('/storage/v1/s3/')) {
-          try {
-            const s3Match = photo.imageUrl.match(/\/storage\/v1\/s3\/([^/]+)\/(.+?)(?:\?|$)/);
-            if (s3Match) {
-              const bucket = s3Match[1];
-              const key = s3Match[2];
-              
-              const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-              signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-            }
-          } catch (e) {
-            console.error('[GET journey] Failed to re-sign S3 URL:', e);
-          }
-        }
-
+      journey.photos.map(async (photo: any) => {
+        const signedUrl = await getTieredSignedUrl(photo.imageUrl, journey.status);
         return {
           ...photo,
           imageUrl: signedUrl,
@@ -148,39 +108,12 @@ export async function GET(
 
     // Sign successPhotoUrl if present
     let signedSuccessPhotoUrl = journey.successPhotoUrl;
-    if (journey.successPhotoUrl && (journey.successPhotoUrl.includes('/storage/v1/object/public/') || journey.successPhotoUrl.includes('/storage/v1/s3/'))) {
-      try {
-        const urlObj = new URL(journey.successPhotoUrl);
-        let bucket = '';
-        let key = '';
-
-        if (journey.successPhotoUrl.includes('/storage/v1/object/public/')) {
-          const parts = urlObj.pathname.split('/public/');
-          if (parts.length > 1) {
-            const fullPath = parts[1];
-            const pathParts = fullPath.split('/');
-            bucket = pathParts[0];
-            key = pathParts.slice(1).join('/');
-          }
-        } else {
-          const s3Match = journey.successPhotoUrl.match(/\/storage\/v1\/s3\/([^/]+)\/(.+?)(?:\?|$)/);
-          if (s3Match) {
-            bucket = s3Match[1];
-            key = s3Match[2];
-          }
-        }
-
-        if (bucket && key) {
-          const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-          const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-          const { s3Client } = await import('@/lib/s3');
-          const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-          signedSuccessPhotoUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-        }
-      } catch (e) {
-        console.error('[GET journey] Failed to sign success photo URL:', e);
-      }
+    if (journey.successPhotoUrl) {
+      signedSuccessPhotoUrl = await getTieredSignedUrl(journey.successPhotoUrl, journey.status);
     }
+
+    // Get appropriate cache headers
+    const cacheHeaders = getCacheHeaders(journey.status);
 
     return NextResponse.json({
       success: true,
@@ -189,6 +122,8 @@ export async function GET(
         photos: photosWithSignedUrls,
         successPhotoUrl: signedSuccessPhotoUrl,
       }
+    }, {
+      headers: cacheHeaders as HeadersInit
     });
   } catch (error) {
     console.error('Error fetching journey:', error);

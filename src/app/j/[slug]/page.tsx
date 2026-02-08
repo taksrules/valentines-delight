@@ -8,11 +8,10 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from '@/lib/s3';
 import { getClientIP, viewRateLimit } from '@/lib/rate-limit';
 import RateLimitError from '@/components/ui/RateLimitError';
+import { getTieredSignedUrl, getCacheHeaders } from '@/lib/storage';
 
 export default async function JourneyPage({ params }: PageProps) {
   const { slug } = await params;
@@ -109,44 +108,7 @@ export default async function JourneyPage({ params }: PageProps) {
 
   const photosWithSignedUrls = await Promise.all(
     journey.photos.map(async (photo:any) => {
-      let signedUrl = photo.imageUrl;
-
-      try {
-        const urlObj = new URL(photo.imageUrl);
-        
-        // Handle Supabase public storage URLs: /storage/v1/object/public/bucket/key
-        if (photo.imageUrl.includes('/storage/v1/object/public/')) {
-          const parts = urlObj.pathname.split('/storage/v1/object/public/');
-          if (parts.length > 1) {
-            const fullPath = parts[1];
-            const pathParts = fullPath.split('/');
-            const bucket = pathParts[0];
-            const key = pathParts.slice(1).join('/');
-
-            if (bucket && key) {
-              const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-              signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-              console.log(`[Journey] Signed URL for ${key}`);
-            }
-          }
-        }
-        // Handle already-signed S3 URLs or direct storage paths
-        else if (photo.imageUrl.includes('/storage/v1/s3/')) {
-          // Extract bucket and key from S3 URL
-          const s3Match = photo.imageUrl.match(/\/storage\/v1\/s3\/([^/]+)\/(.+?)(?:\?|$)/);
-          if (s3Match) {
-            const bucket = s3Match[1];
-            const key = s3Match[2];
-            
-            const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-            signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-            console.log(`[Journey] Re-signed S3 URL for ${key}`);
-          }
-        }
-      } catch (e) {
-        console.error('[Journey page] Failed to sign photo URL:', photo.imageUrl, e);
-      }
-
+      const signedUrl = await getTieredSignedUrl(photo.imageUrl, journey.status);
       return {
         ...photo,
         imageUrl: signedUrl,
@@ -156,37 +118,14 @@ export default async function JourneyPage({ params }: PageProps) {
 
   // Sign successPhotoUrl if present
   let signedSuccessPhotoUrl = journey.successPhotoUrl;
-  if (journey.successPhotoUrl && (journey.successPhotoUrl.includes('/storage/v1/object/public/') || journey.successPhotoUrl.includes('/storage/v1/s3/'))) {
-    try {
-      const urlObj = new URL(journey.successPhotoUrl);
-      let bucket = '';
-      let key = '';
-
-      if (journey.successPhotoUrl.includes('/storage/v1/object/public/')) {
-        const parts = urlObj.pathname.split('/public/');
-        if (parts.length > 1) {
-          const fullPath = parts[1];
-          const pathParts = fullPath.split('/');
-          bucket = pathParts[0];
-          key = pathParts.slice(1).join('/');
-        }
-      } else {
-        const s3Match = journey.successPhotoUrl.match(/\/storage\/v1\/s3\/([^/]+)\/(.+?)(?:\?|$)/);
-        if (s3Match) {
-          bucket = s3Match[1];
-          key = s3Match[2];
-        }
-      }
-
-      if (bucket && key) {
-        const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-        signedSuccessPhotoUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-        console.log(`[Journey] Signed success photo URL for ${key}`);
-      }
-    } catch (e) {
-      console.error('[Journey page] Failed to sign success photo URL:', e);
-    }
+  if (journey.successPhotoUrl) {
+    signedSuccessPhotoUrl = await getTieredSignedUrl(journey.successPhotoUrl, journey.status);
   }
+
+  // Set cache headers for the page response
+  // Note: For Server Components, we can't set headers directly from the component return,
+  // but if this were an API route we would. For the page itself, Next.js handles caching via revalidate.
+  // However, the assets (images) will benefit from the signed URL expiry.
 
   return (
     <JourneyViewer

@@ -76,8 +76,13 @@ export default function WelcomeScreen({ recipientName, creatorName, occasionType
         >
           <div className="space-y-4">
             <p className="text-xl md:text-2xl whitespace-pre-line leading-relaxed text-neutral-700 dark:text-neutral-200 font-romantic">
-              {retryMessage || welcomeMessage}
+              {welcomeMessage}
             </p>
+            {retryCount > 0 && (
+              <p className="text-sm text-rose-500/60 dark:text-rose-400/60 animate-pulse font-medium">
+                (Still here... still hoping 💕)
+              </p>
+            )}
           </div>
         </AnimatedText>
         

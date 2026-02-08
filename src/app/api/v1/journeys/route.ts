@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
-
-import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { s3Client } from '@/lib/s3';
+import { getTieredSignedUrl, getCacheHeaders } from '@/lib/storage';
 
 // GET /api/v1/journeys - List user's journeys
 export async function GET() {
@@ -37,35 +34,8 @@ export async function GET() {
     const formattedJourneys = await Promise.all(journeys.map(async (journey: any) => {
       let firstPhotoUrl = journey.photos[0]?.imageUrl || null;
 
-      if (firstPhotoUrl && (firstPhotoUrl.includes('/storage/v1/object/public/') || firstPhotoUrl.includes('/storage/v1/s3/'))) {
-        try {
-          const urlObj = new URL(firstPhotoUrl);
-          let bucket = '';
-          let key = '';
-
-          if (firstPhotoUrl.includes('/storage/v1/object/public/')) {
-            const parts = urlObj.pathname.split('/public/');
-            if (parts.length > 1) {
-              const fullPath = parts[1];
-              const pathParts = fullPath.split('/');
-              bucket = pathParts[0];
-              key = pathParts.slice(1).join('/');
-            }
-          } else {
-            const s3Match = firstPhotoUrl.match(/\/storage\/v1\/s3\/([^/]+)\/(.+?)(?:\?|$)/);
-            if (s3Match) {
-              bucket = s3Match[1];
-              key = s3Match[2];
-            }
-          }
-
-          if (bucket && key) {
-            const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-            firstPhotoUrl = await getSignedUrl(s3Client, command, { expiresIn: 1800 });
-          }
-        } catch (e) {
-          console.error('[Journeys List] Failed to sign photo URL:', e);
-        }
+      if (firstPhotoUrl) {
+        firstPhotoUrl = await getTieredSignedUrl(firstPhotoUrl, journey.status);
       }
 
       return {
@@ -80,9 +50,18 @@ export async function GET() {
     }));
 
 
+    // For the list view, we use private caching to ensure users always see their latest drafts
+    // but published ones can still benefit from 5m revalidation
+    const cacheHeaders = {
+      'Cache-Control': 'private, max-age=300, must-revalidate',
+      'X-Cache-Status': 'private-list'
+    };
+
     return NextResponse.json({
       success: true,
       journeys: formattedJourneys
+    }, {
+      headers: cacheHeaders as HeadersInit
     });
   } catch (error) {
     console.error('Error fetching journeys:', error);

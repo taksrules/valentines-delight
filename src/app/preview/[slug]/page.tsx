@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import JourneyViewer from '@/components/journey/JourneyViewer';
 import { LayoutDashboard, Edit3, Send, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { getTieredSignedUrl, getCacheHeaders } from '@/lib/storage';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,42 +69,24 @@ export default async function PreviewPage({ params }: PageProps) {
     );
   }
 
-  // Generate signed URLs for photos
-  const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-  const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-  const { s3Client } = await import('@/lib/s3');
-
   const photosWithSignedUrls = await Promise.all(
     journey.photos.map(async (photo: any) => {
-      let signedUrl = photo.imageUrl;
-
-      if (photo.imageUrl.includes('/storage/v1/object/public/')) {
-        try {
-          const urlObj = new URL(photo.imageUrl);
-          const parts = urlObj.pathname.split('/public/');
-
-          if (parts.length > 1) {
-            const fullPath = parts[1];
-            const pathParts = fullPath.split('/');
-            const bucket = pathParts[0];
-            const key = pathParts.slice(1).join('/');
-
-            if (bucket && key) {
-              const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-              signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-            }
-          }
-        } catch (e) {
-          console.error('[Preview page] Failed to sign photo URL:', e);
-        }
-      }
-
+      const signedUrl = await getTieredSignedUrl(photo.imageUrl, journey.status);
       return {
         ...photo,
         imageUrl: signedUrl,
       };
     })
   );
+
+  // Sign successPhotoUrl if present
+  let signedSuccessPhotoUrl = journey.successPhotoUrl;
+  if (journey.successPhotoUrl) {
+    signedSuccessPhotoUrl = await getTieredSignedUrl(journey.successPhotoUrl, journey.status);
+  }
+
+  // Previews should always have private caching
+  const cacheHeaders = getCacheHeaders(journey.status);
 
   return (
     <div className="relative">
@@ -142,7 +126,7 @@ export default async function PreviewPage({ params }: PageProps) {
         journey={{
           ...journey,
           photos: photosWithSignedUrls,
-          successPhotoUrl: journey.successPhotoUrl, // Logic inside viewer handles signing
+          successPhotoUrl: signedSuccessPhotoUrl,
         }}
         isPreview={true}
       />
