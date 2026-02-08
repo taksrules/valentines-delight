@@ -25,6 +25,7 @@ export default function SignUpForm() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [showTurnstile, setShowTurnstile] = useState(false);
   const turnstileTokenRef = React.useRef<string | null>(null);
+  const hasErroredRef = React.useRef(false); // Track if widget gave an error
 
   // Emergency: Log every state change to isLoading
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function SignUpForm() {
     console.error("[REGISTER] handleSubmit starting. Token passed directly:", !!token);
     e?.preventDefault();
     setError(null);
+    hasErroredRef.current = false;
 
     // 1. Basic Validation First (Instant Feedback)
     if (password !== confirmPassword) {
@@ -64,11 +66,13 @@ export default function SignUpForm() {
       
       // Safety net: check the Ref (latest value) after 15s
       setTimeout(() => {
-        if (!turnstileTokenRef.current && !token) {
+        if (!turnstileTokenRef.current && !token && !hasErroredRef.current) {
           console.error("[REGISTER] ❌ Security check timed out after 15s");
           setError("Security verification is taking too long. Please refresh.");
           setIsLoading(false);
           setShowTurnstile(false);
+        } else if (hasErroredRef.current) {
+          console.log("[REGISTER] Timeout suppressed: Widget already reported an error.");
         } else {
           console.log("[REGISTER] Timeout cleared: Token exists in Ref.");
         }
@@ -389,6 +393,7 @@ export default function SignUpForm() {
           }}
           onError={(error: string) => {
             console.error("[REGISTER] Turnstile error:", error);
+            hasErroredRef.current = true;
             setError(error);
             setShowTurnstile(false);
             setIsLoading(false);
