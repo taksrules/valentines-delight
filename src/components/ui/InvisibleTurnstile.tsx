@@ -26,34 +26,42 @@ export function InvisibleTurnstile({
     turnstileRef.current?.execute()
   }, [])
 
-  // Use testing key in development to avoid "Domain Not Allowed" error 110200
-  const isLocal = typeof window !== 'undefined' && 
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  // Improved local detection for dev environments
+  const isLocal = typeof window !== 'undefined' && (
+      window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.endsWith('.local') ||
+      !window.location.hostname.includes('.')
+    )
   
   // CRITICAL: Ensure siteKey matches the logic in lib/turnstile.ts
   const siteKey = (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !isLocal)
     ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
     : '1x00000000000000000000AA' // Cloudflare "Always Pass" Testing Key
 
-  if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !isLocal) {
-    console.warn('[TURNSTILE] NEXT_PUBLIC_TURNSTILE_SITE_KEY is missing in production! Using testing key (Always Pass).')
-  }
-
-  if (!siteKey) {
-    console.error('[TURNSTILE] No site key available.')
-    return null
-  }
+  useEffect(() => {
+    const keySource = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'ENV' : 'MISSING';
+    const keyPreview = siteKey.substring(0, 6) + '...' + siteKey.substring(siteKey.length - 4);
+    console.error(`[TURNSTILE] Initializing widget. Host: ${window.location.hostname}, isLocal: ${isLocal}, KeySource: ${keySource}, Key: ${keyPreview}`);
+    
+    // Auto-execute
+    if (turnstileRef.current) {
+      console.log("[TURNSTILE] Found ref, executing...");
+      turnstileRef.current.execute();
+    }
+  }, [isLocal, siteKey]);
 
   return (
-    <Turnstile
-      ref={turnstileRef}
-      siteKey={siteKey}
-      options={{
-        action: action,
-        theme: 'light',
-        size: 'invisible', // CRITICAL: invisible mode
-        execution: 'render',
-      }}
+    <div className="flex flex-col items-center gap-2 my-4">
+      <Turnstile
+        ref={turnstileRef}
+        siteKey={siteKey}
+        options={{
+          action: action,
+          theme: 'light',
+          size: 'normal', // TEMPORARILY VISIBLE for debugging production failures
+          execution: 'render',
+        }}
       onSuccess={(token) => {
         console.log('[TURNSTILE] ✅ Verified')
         onVerify(token)
@@ -69,5 +77,17 @@ export function InvisibleTurnstile({
         turnstileRef.current?.execute()
       }}
     />
+    <button 
+      type="button"
+      onClick={() => {
+        console.error("[TURNSTILE] Manual reset triggered");
+        turnstileRef.current?.reset();
+        turnstileRef.current?.execute();
+      }}
+      className="text-xs text-rose-400 hover:text-rose-500 underline underline-offset-4"
+    >
+      Problems verifying? Click to reload security.
+    </button>
+  </div>
   )
 }
