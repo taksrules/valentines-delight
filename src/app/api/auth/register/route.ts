@@ -5,9 +5,11 @@ import crypto from "crypto";
 import { sendVerificationEmail } from "@/lib/email/resend";
 
 export async function POST(request: Request) {
+  const start = Date.now();
   try {
     const body = await request.json();
     const { email, password, name, turnstileToken } = body;
+    console.log(`[API/REGISTER] Request for: ${email}`);
 
     // Rate Limiting
     const { signupRateLimit, getRateLimitHeaders, formatTimeRemaining, getClientIP: getIP } = await import('@/lib/rate-limit');
@@ -16,6 +18,7 @@ export async function POST(request: Request) {
     const rlHeaders = getRateLimitHeaders(limit, remaining, reset);
 
     if (!success) {
+      console.warn(`[API/REGISTER] Rate limited: ${email} (${ip})`);
       return NextResponse.json(
         { error: `Too many registration attempts. Please try again in ${formatTimeRemaining(reset)}.` },
         { status: 429, headers: rlHeaders }
@@ -24,7 +27,7 @@ export async function POST(request: Request) {
 
     // Verify Turnstile
     if (!turnstileToken) {
-      console.warn('[SECURITY] Registration without Turnstile token');
+      console.warn('[API/REGISTER] ❌ Security failure: Missing Turnstile token');
       return NextResponse.json(
         { error: "Verification required" },
         { status: 400 }
@@ -33,9 +36,11 @@ export async function POST(request: Request) {
 
     const { verifyTurnstileToken, getClientIP } = await import('@/lib/turnstile');
     const clientIP = getClientIP(request);
+    console.log(`[API/REGISTER] Verifying Turnstile for ${email}...`);
     const verification = await verifyTurnstileToken(turnstileToken, clientIP);
 
     if (!verification.success) {
+      console.warn(`[API/REGISTER] ❌ Security failure: Turnstile rejected ${email} - ${verification.error}`);
       return NextResponse.json(
         { error: verification.error || "Verification failed" },
         { status: 400 }
@@ -63,6 +68,7 @@ export async function POST(request: Request) {
     });
 
     if (existingUser) {
+      console.warn(`[API/REGISTER] ❌ Conflict: User already exists - ${email}`);
       return NextResponse.json(
         { error: "An account with this email already exists" },
         { status: 409 }
@@ -73,6 +79,7 @@ export async function POST(request: Request) {
     const passwordHash = await bcrypt.hash(password, 12);
 
     // Create user
+    console.log(`[API/REGISTER] Creating user: ${email}...`);
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
@@ -95,12 +102,14 @@ export async function POST(request: Request) {
 
     // Send verification email
     try {
+      console.log(`[API/REGISTER] Sending verification email to ${email}...`);
       await sendVerificationEmail(email, token, name || "there");
     } catch (emailError) {
-      console.error("Failed to send verification email:", emailError);
+      console.error("[API/REGISTER] 📧 Email failure:", emailError);
       // Don't fail registration if email fails - user can resend later
     }
 
+    console.log(`[API/REGISTER] ✅ Success in ${Date.now() - start}ms: ${email}`);
     return NextResponse.json(
       {
         message: "Account created successfully. Please check your email to verify your account.",
@@ -109,7 +118,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("[API/REGISTER] 💥 Server Error:", error);
     return NextResponse.json(
       { error: "Failed to create account" },
       { status: 500 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import StepIndicator from "@/components/ui/StepIndicator";
@@ -25,6 +25,21 @@ export default function SignUpForm() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [showTurnstile, setShowTurnstile] = useState(false);
 
+  // CRITICAL: Handle the Turnstile timeout safety to prevent infinite loader
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (isLoading && showTurnstile) {
+      // If Turnstile is shown but hasn't verified within 15s, reset
+      timeoutId = setTimeout(() => {
+        console.warn("[REGISTER] Turnstile verification timed out");
+        setError("Security verification is taking too long. Please refresh and try again.");
+        setIsLoading(false);
+        setShowTurnstile(false);
+      }, 15000); 
+    }
+    return () => clearTimeout(timeoutId);
+  }, [isLoading, showTurnstile]);
+
   const handleSubmit = async (e: React.FormEvent, token?: string) => {
     e?.preventDefault();
     setError(null);
@@ -46,13 +61,13 @@ export default function SignUpForm() {
     // 3. Security Check (Turnstile)
     // If no token provided and not already verified, trigger Turnstile
     if (!token && !turnstileToken) {
+      console.log("[REGISTER] Triggering Turnstile verification...");
       setShowTurnstile(true);
-      // Note: Turnstile component will call handleSubmit again via onVerify
       return;
     }
 
     try {
-      console.log("[REGISTER] Starting submission for:", email);
+      console.log("[REGISTER] Starting API submission for:", email);
       
       const registerPromise = fetch("/api/auth/register", {
         method: "POST",
@@ -67,7 +82,7 @@ export default function SignUpForm() {
         }),
       });
 
-      // 20 second timeout for registration
+      // Add a timeout to prevent infinite loader (matching login timeout)
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error("REGISTER_TIMEOUT")), 20000)
       );
@@ -75,7 +90,10 @@ export default function SignUpForm() {
       const response = await Promise.race([registerPromise, timeoutPromise]) as Response;
       const data = await response.json();
 
+      console.log("[REGISTER] API result:", response.status, data);
+
       if (!response.ok) {
+        console.error("[REGISTER] Registration failed:", data.error);
         if (response.status === 429) {
           setError(data.error || "Too many attempts. Please wait a moment before trying again.");
         } else {
@@ -87,9 +105,10 @@ export default function SignUpForm() {
       }
 
       // Success - move to step 2
+      console.log("[REGISTER] Success! Moving to verification step.");
       setCurrentStep(1);
     } catch (err: any) {
-      console.error("[REGISTER] Registration error:", err);
+      console.error("[REGISTER] Exception during submission:", err);
       if (err.message === "REGISTER_TIMEOUT") {
         setError("Registration timed out. Please check your connection and try again.");
       } else {
@@ -99,7 +118,7 @@ export default function SignUpForm() {
       setShowTurnstile(false);
     } finally {
       setIsLoading(false);
-      console.log("[REGISTER] Registration flow finished");
+      console.log("[REGISTER] Flow finished");
     }
   };
 
@@ -352,12 +371,14 @@ export default function SignUpForm() {
         <InvisibleTurnstile
           action="signup"
           onVerify={(token: string) => {
+            console.log("[REGISTER] Turnstile verified successfully.");
             setTurnstileToken(token);
             setShowTurnstile(false);
             const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
             handleSubmit(fakeEvent, token);
           }}
           onError={(error: string) => {
+            console.error("[REGISTER] Turnstile error:", error);
             setError(error);
             setShowTurnstile(false);
             setIsLoading(false);
