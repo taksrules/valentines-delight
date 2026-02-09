@@ -7,11 +7,14 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { useBuilderStore } from '@/stores/builderStore';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const resetBuilder = useBuilderStore((state) => state.reset);
   
   useEffect(() => {
     setMounted(true);
@@ -57,7 +60,9 @@ export default function Sidebar() {
   ];
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
+    setIsSigningOut(true);
+    resetBuilder();
+    await signOut({ callbackUrl: '/sign-in' }); // Redirect to sign-in for cleaner flow
   };
 
   return (
@@ -102,12 +107,19 @@ export default function Sidebar() {
       <div className="p-4 border-t border-neutral-200 dark:border-neutral-800">
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-neutral-400 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors mb-2"
+          disabled={isSigningOut}
+          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-neutral-400 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors mb-2 disabled:opacity-50"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          <span className="text-sm font-medium">Sign Out</span>
+          {isSigningOut ? (
+            <div className="w-5 h-5 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          )}
+          <span className="text-sm font-medium">
+            {isSigningOut ? 'Logging out...' : 'Sign Out'}
+          </span>
         </button>
 
         <div className="px-4 py-2 flex items-center justify-between text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">

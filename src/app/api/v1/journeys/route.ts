@@ -58,11 +58,11 @@ export async function GET() {
     }));
 
 
-    // For the list view, we use private caching to ensure users always see their latest drafts
-    // but published ones can still benefit from 5m revalidation
+    // Force no-cache to prevent data leakage between user sessions
     const cacheHeaders = {
-      'Cache-Control': 'private, max-age=300, must-revalidate',
-      'X-Cache-Status': 'private-list'
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
     };
 
     return NextResponse.json({

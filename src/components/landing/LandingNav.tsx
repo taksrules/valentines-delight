@@ -8,11 +8,14 @@ import { useSession, signOut } from 'next-auth/react';
 import Container from '@/components/ui/Container';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import Button from '@/components/ui/Button';
+import { useBuilderStore } from '@/stores/builderStore';
 
 export default function LandingNav() {
   const { data: session, status } = useSession();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const resetBuilder = useBuilderStore((state) => state.reset);
 
   useEffect(() => {
     setMounted(true);
@@ -61,10 +64,15 @@ export default function LandingNav() {
               </Link>
               <Button 
                 variant="secondary" 
-                onClick={() => signOut({ callbackUrl: '/' })}
+                onClick={async () => {
+                  setIsSigningOut(true);
+                  resetBuilder();
+                  await signOut({ callbackUrl: '/' });
+                }}
+                disabled={isSigningOut}
                 className="px-5 py-2 text-sm"
               >
-                Sign Out
+                {isSigningOut ? 'Signing Out...' : 'Sign Out'}
               </Button>
             </div>
           ) : mounted && status === 'unauthenticated' ? (
