@@ -34,18 +34,11 @@ export default function SignInForm() {
       console.log("[LOGIN] Starting sign-in for:", email);
       
       // Add a timeout to prevent infinite loader
-      const signInPromise = signIn("credentials", {
+      const result = await signIn("credentials", {
         email: email.toLowerCase(),
         password,
-        redirect: true,
-        callbackUrl: "/dashboard",
+        redirect: false, // CRITICAL: Handle error in-place
       });
-
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("SIGNIN_TIMEOUT")), 15000)
-      );
-
-      const result = await Promise.race([signInPromise, timeoutPromise]) as any;
 
       console.log("[LOGIN] Sign in result:", result);
 
@@ -58,6 +51,14 @@ export default function SignInForm() {
         } else {
           setError(result.error);
         }
+        setIsLoading(false);
+        return;
+      }
+
+      if (result?.ok) {
+        console.log("[LOGIN] Success, redirecting...");
+        router.push("/dashboard");
+        router.refresh();
       }
     } catch (err: any) {
       console.error("[LOGIN] Exception during sign-in:", err);

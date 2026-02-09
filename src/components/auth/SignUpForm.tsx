@@ -107,11 +107,13 @@ export default function SignUpForm() {
       console.log("[REGISTER] API result:", response.status, data);
 
       if (!response.ok) {
-        console.error("[REGISTER] Registration failed:", data.error);
-        if (response.status === 429) {
+        console.error("[REGISTER] Registration failed status:", response.status);
+        if (response.status === 409) {
+          setError("An account with this email already exists. Try signing in or use a different email.");
+        } else if (response.status === 429) {
           setError(data.error || "Too many attempts. Please wait a moment before trying again.");
         } else {
-          setError(data.error || "Registration failed");
+          setError(data.error || "Registration failed. Please try again.");
         }
         setTurnstileToken(null);
         setShowTurnstile(false);
