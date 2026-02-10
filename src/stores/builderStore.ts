@@ -140,10 +140,14 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   setPhotos: (photos) => set({ photos }),
 
   addPhoto: (photo) => {
-    const { photos } = get();
-    if (photos.length < 6) {
-      set({ photos: [...photos, photo] });
-    }
+    set((state) => {
+      if (state.photos.length >= 6) return state;
+      const photoWithId = {
+        ...photo,
+        id: photo.id || Math.random().toString(36).substring(7),
+      };
+      return { photos: [...state.photos, photoWithId] };
+    });
   },
 
   updatePhoto: (index, photoUpdate) => {
