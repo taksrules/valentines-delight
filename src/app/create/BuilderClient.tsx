@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useBuilderStore } from '@/stores/builderStore';
-import { showError, showSuccess, showUpgradePrompt, showLoadingPromise } from '@/lib/notifications';
+import { showError, showSuccess, showUpgradePrompt, showLoadingPromise, showWarning } from '@/lib/notifications';
 import StepIndicator from '@/components/builder/StepIndicator';
 import { QRCodeCanvas } from 'qrcode.react';
 import Step1Occasion from '@/components/builder/Step1Occasion';
@@ -17,6 +17,7 @@ import Container from '@/components/ui/Container';
 import { PageLoader } from '@/components/ui/Loader';
 import Button from '@/components/ui/Button'; // Assuming I want to swap existing buttons to my Button component
 import { InvisibleTurnstile } from '@/components/ui/InvisibleTurnstile';
+import RomanticLoader from '@/components/ui/RomanticLoader';
 
 interface BuilderClientProps {
   user: {
@@ -96,10 +97,21 @@ export default function BuilderClient({ user }: BuilderClientProps) {
     }
   };
 
-  const handleNext = async (token?: string) => {
-    if (!canProceed()) return;
+  const [shake, setShake] = useState(false);
 
-    const isHighStakes = currentStep === 2 || currentStep === 5;
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  };
+
+  const handleNext = async (token?: string) => {
+    if (!canProceed()) {
+      triggerShake();
+      showWarning('Requirements not met', getStepHelp() || 'Please complete the current step to continue.');
+      return;
+    }
+
+    const isHighStakes = currentStep >= 2;
     const loadingToast = isHighStakes ? toast.loading('Saving your journey...') : null;
 
     try {
@@ -211,87 +223,126 @@ export default function BuilderClient({ user }: BuilderClientProps) {
     <div className="min-h-screen py-12">
       <Container>
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
+        <div className="text-center mb-12">
+          <motion.h1 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-100 mb-4 font-serif"
+          >
             Create Your Journey
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-300">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-neutral-600 dark:text-neutral-300"
+          >
             Follow the steps to create an unforgettable experience
-          </p>
+          </motion.p>
         </div>
 
         {/* Step Indicator */}
         <StepIndicator currentStep={currentStep} onStepClick={setStep} />
 
-        {/* Auto-save Indicator */}
-        <div className="flex justify-center mb-6">
-          {isSaving ? (
-            <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-              <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
-              <span>Saving...</span>
-            </div>
-          ) : lastSaved ? (
-            <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-              <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>Saved {formatTimeSince(lastSaved as Date)}</span>
-            </div>
-          ) : null}
-        </div>
+        {/* Floating Auto-save Indicator (Mobile & Desktop) */}
+        <AnimatePresence>
+          {(isSaving || lastSaved) && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 md:left-auto md:right-8 md:translate-x-0 z-40"
+            >
+              <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md px-4 py-2 rounded-full border border-neutral-200 dark:border-neutral-800 shadow-lg flex items-center gap-3">
+                {isSaving ? (
+                  <>
+                    <div className="w-3 h-3 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">Saved {formatTimeSince(lastSaved as Date)}</span>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Step Content */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, x: 10, y: 5 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            exit={{ opacity: 0, x: -10, y: -5 }}
+            transition={{ 
+              duration: 0.4,
+              ease: [0.23, 1, 0.32, 1] // Custom ease for a premium feel
+            }}
           >
             {getStepComponent()}
           </motion.div>
         </AnimatePresence>
 
         {/* Navigation */}
-        <div className="mt-12 flex items-center justify-between max-w-4xl mx-auto">
-          <Button
-            onClick={handleBack}
-            disabled={currentStep === 1}
-            variant="secondary"
-          >
-            ← Back
-          </Button>
+        <div className="mt-12 flex flex-col items-center gap-6 max-w-4xl mx-auto">
+          <div className="flex items-center justify-between w-full">
+            <Button
+              onClick={handleBack}
+              disabled={currentStep === 1 || isPublishing}
+              variant="secondary"
+            >
+              ← Back
+            </Button>
 
-          <div className="flex items-center gap-4">
-            {!canProceed() && getStepHelp() && (
-              <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                {getStepHelp()}
-              </span>
-            )}
+            <div className="flex items-center gap-4">
+              {!canProceed() && getStepHelp() && (
+                <span className="text-sm text-neutral-600 dark:text-neutral-400 italic">
+                  {getStepHelp()}
+                </span>
+              )}
 
-            {currentStep < 5 ? (
-              <Button
-                onClick={() => handleNext()}
-                disabled={!canProceed()}
-                isLoading={isSaving}
-              >
-                Continue →
-              </Button>
-            ) : (
-              <Button
-                onClick={() => handlePublish()}
-                disabled={!canProceed()}
-                isLoading={isPublishing || isSaving}
-              >
-                🎉 Publish Journey
-              </Button>
-            )}
+              {currentStep < 5 ? (
+                <motion.div
+                  animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
+                  transition={{ duration: 0.4 }}
+                >
+                  <Button
+                    onClick={() => handleNext()}
+                    // No longer disabled so it can be clicked for feedback
+                  >
+                    Continue →
+                  </Button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
+                  transition={{ duration: 0.4 }}
+                >
+                  <Button
+                    onClick={() => handlePublish()}
+                    disabled={isPublishing} // Only disable during active publishing
+                  >
+                    🎉 Publish Journey
+                  </Button>
+                </motion.div>
+              )}
+            </div>
           </div>
+
+          {/* Branded Loader for Publishing */}
+          <AnimatePresence>
+            {isPublishing && (
+              <RomanticLoader 
+                fullPage 
+                message="Sharing your magic with the world..." 
+              />
+            )}
+          </AnimatePresence>
         </div>
       </Container>
 

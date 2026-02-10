@@ -62,20 +62,37 @@ export default function Step1Occasion() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <motion.div 
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.1
+            }
+          }
+        }}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      >
         {occasions.map((occasion) => (
           <motion.button
             key={occasion.type}
-            whileHover={occasion.available ? { y: -4 } : {}}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              show: { opacity: 1, y: 0 }
+            }}
+            whileHover={occasion.available ? { y: -4, scale: 1.02 } : {}}
             whileTap={occasion.available ? { scale: 0.98 } : {}}
             onClick={() => occasion.available && setOccasionType(occasion.type)}
             disabled={!occasion.available}
-            className={`relative p-6 rounded-xl border-2 transition-all text-left ${
+            className={`relative p-8 rounded-2xl border-2 transition-all text-left ${
               occasionType === occasion.type
-                ? 'border-rose-500 bg-rose-50 dark:bg-rose-500/10 shadow-lg shadow-rose-500/20'
+                ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-500/10 shadow-xl shadow-rose-500/10'
                 : occasion.available
-                ? 'border-neutral-200 dark:border-neutral-800 hover:border-rose-300 dark:hover:border-rose-700 bg-white dark:bg-neutral-900'
-                : 'border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 opacity-60 cursor-not-allowed'
+                ? 'border-neutral-200 dark:border-neutral-800 hover:border-rose-300 dark:hover:border-rose-700 bg-white dark:bg-neutral-900 shadow-sm'
+                : 'border-neutral-100 dark:border-neutral-900 bg-neutral-50 dark:bg-neutral-900/50 opacity-40 cursor-not-allowed'
             }`}
           >
             {/* Coming Soon Badge */}
@@ -124,7 +141,7 @@ export default function Step1Occasion() {
             )}
           </motion.button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Info Box */}
       <motion.div

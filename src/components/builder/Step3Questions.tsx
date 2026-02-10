@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useBuilderStore, type Question } from '@/stores/builderStore';
 import { useState } from 'react';
 
@@ -74,6 +74,25 @@ export default function Step3Questions() {
           Choose 4 questions to guide your journey
         </p>
       </div>
+
+      {/* Requirement Banner */}
+      <AnimatePresence>
+        {questions.length < 4 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-6 overflow-hidden"
+          >
+            <div className="bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-900/30 rounded-xl p-4 flex items-center gap-3">
+              <div className="text-2xl animate-pulse">📝</div>
+              <div className="flex-1 text-sm md:text-base font-medium text-rose-800 dark:text-rose-300">
+                Magic needs structure! You need <span className="font-bold underline">{4 - questions.length} more</span> {4 - questions.length === 1 ? 'question' : 'questions'} to proceed.
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b border-neutral-200 dark:border-neutral-800">
@@ -164,10 +183,27 @@ export default function Step3Questions() {
           </div>
 
           {questions.length === 4 && questionSource === 'template' && (
-            <div className="space-y-3">
+            <motion.div
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.1
+                  }
+                }
+              }}
+              initial="hidden"
+              animate="show"
+              className="space-y-3"
+            >
               {questions.map((q, i) => (
-                <div
+                <motion.div
                   key={i}
+                  variants={{
+                    hidden: { opacity: 0, y: 10 },
+                    show: { opacity: 1, y: 0 }
+                  }}
                   className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg"
                 >
                   <p className="font-medium text-neutral-900 dark:text-neutral-100 mb-2">
@@ -179,9 +215,9 @@ export default function Step3Questions() {
                     <span>• {q.option3}</span>
                     {q.option4 && <span>• {q.option4}</span>}
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </motion.div>
       )}
@@ -202,32 +238,52 @@ export default function Step3Questions() {
       {/* Custom Tab */}
       {activeTab === 'custom' && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1
+              }
+            }
+          }}
+          initial="hidden"
+          animate="show"
           className="space-y-4"
         >
           {questions.map((question, index) => (
-            <QuestionEditor
+            <motion.div
               key={index}
-              question={question}
-              index={index}
-              isEditing={editingIndex === index}
-              onEdit={() => setEditingIndex(index)}
-              onSave={(updated) => {
-                updateQuestion(index, updated);
-                setEditingIndex(null);
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0 }
               }}
-              onRemove={() => removeQuestion(index)}
-            />
+            >
+              <QuestionEditor
+                question={question}
+                index={index}
+                isEditing={editingIndex === index}
+                onEdit={() => setEditingIndex(index)}
+                onSave={(updated) => {
+                  updateQuestion(index, updated);
+                  setEditingIndex(null);
+                }}
+                onRemove={() => removeQuestion(index)}
+              />
+            </motion.div>
           ))}
 
           {questions.length < 4 && (
-            <button
+            <motion.button
+              variants={{
+                hidden: { opacity: 0, scale: 0.95 },
+                show: { opacity: 1, scale: 1 }
+              }}
               onClick={handleAddCustomQuestion}
-              className="w-full p-6 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-xl hover:border-rose-500 dark:hover:border-rose-500 transition-colors text-neutral-600 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 font-medium"
+              className="w-full p-6 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-xl hover:border-rose-500 dark:hover:border-rose-500 transition-all text-neutral-600 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 font-medium bg-white/50 dark:bg-neutral-900/50 hover:bg-white dark:hover:bg-neutral-900 shadow-sm hover:shadow-md"
             >
               + Add Question ({questions.length}/4)
-            </button>
+            </motion.button>
           )}
         </motion.div>
       )}
