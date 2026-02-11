@@ -72,7 +72,7 @@ export default function Sidebar() {
         {mounted && (
           <Image
             src={logoSrc}
-            alt="Emotional Moments"
+            alt="Tenderly"
             width={140}
             height={32}
             className="h-8 w-auto"

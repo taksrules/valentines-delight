@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
+import { auth } from '@/auth';
 import JourneyDetailClient from '@/components/dashboard/JourneyDetailClient';
 import { Suspense } from 'react';
 

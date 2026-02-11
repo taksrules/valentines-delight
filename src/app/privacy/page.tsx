@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Tenderly',
-  description: 'How we protect your emotional moments and personal data.',
+  description: 'How we protect your romantic journeys and personal data.',
 };
 
 export default function PrivacyPage() {
@@ -29,7 +29,7 @@ export default function PrivacyPage() {
                 Our Commitment to Your Moments
               </h2>
               <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                Tenderly is designed to help you create and share deeply personal experiences. We understand the sensitive nature of these "Emotional Moments" and are committed to protecting the privacy of both creators and recipients.
+                Tenderly is a designed to help you create and share deeply personal experiences. We understand the sensitive nature of these romantic journeys and are committed to protecting the privacy of both creators and recipients.
               </p>
             </section>
 

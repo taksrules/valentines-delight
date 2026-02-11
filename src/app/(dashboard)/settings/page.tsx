@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
-import { auth } from '@/lib/auth';
+import { auth } from '@/auth';
 import SettingsClient from './SettingsClient';
 import Container from '@/components/ui/Container';
 

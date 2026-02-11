@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
-import { auth } from '@/lib/auth';
+import { auth } from '@/auth';
 import DashboardClient from './DashboardClient';
 import Container from '@/components/ui/Container';
 
 export const metadata = {
-  title: 'Dashboard - Emotional Moments',
-  description: 'Manage your emotional journeys'
+  title: 'Dashboard - Tenderly',
+  description: 'Manage your Tenderly journeys'
 };
 
 export const dynamic = 'force-dynamic';

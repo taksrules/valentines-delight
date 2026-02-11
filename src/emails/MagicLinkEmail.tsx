@@ -36,7 +36,7 @@ export const MagicLinkEmail = ({ url, host }: MagicLinkEmailProps) => (
         lineHeight: '24px',
         marginBottom: '30px',
       }}>
-        You requested a magic link to sign in to your Emotional Moments Platform account on <strong>{host}</strong>.
+        You requested a magic link to sign in to your Tenderly account on <strong>{host}</strong>.
       </p>
       <a href={url} style={{
         display: 'inline-block',

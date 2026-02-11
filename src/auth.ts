@@ -1,16 +1,16 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { authConfig } from "./auth/auth.config";
+import { authConfig } from "./auth.config";
 
-/**
- * Main Auth instance for server-side use in API routes and Server Components.
- * This includes heavyweight dependencies like providers and DB logic.
- */
 export const { handlers, auth, signIn, signOut } = NextAuth({
-
+  adapter: PrismaAdapter(prisma),
+  session: { strategy: "jwt" },
   ...authConfig,
   providers: [
+    ...authConfig.providers,
     Credentials({
       name: "Credentials",
       credentials: {
@@ -25,13 +25,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
 
-        // Lazy load prisma to avoid initializing it during middleware checks
-        const { prisma } = await import("@/lib/prisma");
-
         const user = await prisma.user.findUnique({
           where: { email },
         });
-
 
         if (!user || !user.passwordHash) {
           return null;
@@ -52,9 +48,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.name ?? undefined,
+          image: user.image ?? undefined,
           emailVerified: user.emailVerified,
-        } as any;
+        };
       },
     }),
   ],
+  debug: process.env.NODE_ENV === "development",
+  logger: process.env.NODE_ENV === "development" ? {
+    error: (code, ...message) => {
+      console.error(`[AUTH_ERROR] ${code}:`, ...message);
+    },
+    warn: (code, ...message) => {
+      console.warn(`[AUTH_WARN] ${code}:`, ...message);
+    },
+    debug: (code, ...message) => {
+      console.log(`[AUTH_DEBUG] ${code}:`, ...message);
+    },
+  } : undefined,
 });

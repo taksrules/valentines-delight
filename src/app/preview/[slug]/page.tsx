@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
+import { auth } from '@/auth';
 import JourneyViewer from '@/components/journey/JourneyViewer';
 import { LayoutDashboard, Edit3, Send, AlertCircle } from 'lucide-react';
 import Link from 'next/link';

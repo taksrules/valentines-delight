@@ -30,7 +30,7 @@ export default function LandingNav() {
         <Link href="/" className="flex items-center gap-2 group transition-all duration-300">
           <Image
             src={logoSrc}
-            alt="Emotional Moments"
+            alt="Tenderly"
             width={160}
             height={40}
             className="h-8 w-auto transition-transform duration-300 group-hover:scale-105"

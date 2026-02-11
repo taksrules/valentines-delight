@@ -47,7 +47,7 @@ export default async function JourneyPage({ params }: PageProps) {
 
   // CRITICAL: Only show published or completed journeys publicly
   if (journey.status !== 'published' && journey.status !== 'completed') {
-    const { auth } = await import('@/lib/auth');
+    const { auth } = await import('@/auth');
     const session = await auth();
     
     // If logged in creator, give them a hint
