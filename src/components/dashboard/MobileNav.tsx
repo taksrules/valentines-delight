@@ -23,7 +23,7 @@ export default function MobileNav() {
         {mounted ? (
           <Image
             src={logoSrc}
-            alt="Emotional Moments"
+            alt="Tenderly"
             width={120}
             height={28}
             className="h-7 w-auto"

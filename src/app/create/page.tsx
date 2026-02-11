@@ -4,7 +4,7 @@ import { auth } from '@/auth';
 import BuilderClient from './BuilderClient';
 
 export const metadata = {
-  title: 'Create Journey - Emotional Moments',
+  title: 'Create Journey - Tenderly',
   description: 'Create a beautiful emotional journey for someone special'
 };
 

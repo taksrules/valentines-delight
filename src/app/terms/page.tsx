@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Terms of Service | Tenderly',
-  description: 'The terms and conditions for using Tenderly to create emotional moments.',
+  description: 'The terms and conditions for using Tenderly to create romantic journeys.',
 };
 
 export default function TermsPage() {
@@ -40,7 +40,7 @@ export default function TermsPage() {
                 2. Use of the Service
               </h2>
               <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                Tenderly is a platform for creating personalized, interactive "Emotional Moments." You are responsible for all content you upload and share. You agree not to use the Service for any unlawful purpose or to share content that is harmful, offensive, or violates the rights of others.
+                Tenderly is a platform for creating personalized, interactive romantic journeys. You are responsible for all content you upload and share. You agree not to use the Service for any unlawful purpose or to share content that is harmful, offensive, or violates the rights of others.
               </p>
             </section>
 

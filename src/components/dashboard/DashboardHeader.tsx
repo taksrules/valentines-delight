@@ -36,7 +36,7 @@ export default function DashboardHeader({ userName, journeyCount, monthlyLimit, 
           </h1>
           <p className="text-base font-normal text-neutral-600 dark:text-neutral-400">
             {currentTab === 'Dashboard' 
-              ? "Here's what's happening with your emotional moments."
+              ? "Here's what's happening with your Tenderly journeys."
               : "Manage and relive the journeys you've created."}
           </p>
         </div>
