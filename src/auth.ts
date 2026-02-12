@@ -16,6 +16,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        turnstileToken: { label: "Turnstile Token", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -24,6 +25,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const email = credentials.email as string;
         const password = credentials.password as string;
+        const turnstileToken = credentials.turnstileToken as string;
+
+        // Verify Turnstile
+        if (!turnstileToken) {
+          throw new Error("Verification required");
+        }
+
+        const { verifyTurnstileToken } = await import('@/lib/turnstile');
+        const verification = await verifyTurnstileToken(turnstileToken);
+
+        if (!verification.success) {
+          throw new Error(verification.error || "Bot verification failed");
+        }
 
         const user = await prisma.user.findUnique({
           where: { email },

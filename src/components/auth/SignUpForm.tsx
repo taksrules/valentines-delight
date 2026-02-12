@@ -28,20 +28,7 @@ export default function SignUpForm() {
   const turnstileTokenRef = React.useRef<string | null>(null);
   const hasErroredRef = React.useRef(false); // Track if widget gave an error
 
-  // Emergency: Log every state change to isLoading
-  useEffect(() => {
-    console.error(`[REGISTER] UI State Update - isLoading: ${isLoading}, showTurnstile: ${showTurnstile}`);
-  }, [isLoading, showTurnstile]);
-
-  // Sync ref with state for use in timeouts
-  useEffect(() => {
-    turnstileTokenRef.current = turnstileToken;
-  }, [turnstileToken]);
-
-  // Removed brittle useEffect timeout to unify with handleSubmit logic
-
   const handleSubmit = async (e: React.FormEvent, token?: string) => {
-    console.error("[REGISTER] handleSubmit starting. Token passed directly:", !!token);
     e?.preventDefault();
     setError(null);
     hasErroredRef.current = false;
@@ -57,33 +44,25 @@ export default function SignUpForm() {
       return;
     }
 
-    // 2. Set Loading State Immediately
+    // 2. Set Loading State
     setIsLoading(true);
 
     // 3. Security Check (Turnstile)
     if (!token && !turnstileToken) {
-      console.error("[REGISTER] Security check: No token, showing Turnstile widget...");
       setShowTurnstile(true);
       
-      // Safety net: check the Ref (latest value) after 15s
+      // Safety net: check after 15s
       setTimeout(() => {
         if (!turnstileTokenRef.current && !token && !hasErroredRef.current) {
-          console.error("[REGISTER] ❌ Security check timed out after 15s");
           setError("Security verification is taking too long. Please refresh.");
           setIsLoading(false);
           setShowTurnstile(false);
-        } else if (hasErroredRef.current) {
-          console.log("[REGISTER] Timeout suppressed: Widget already reported an error.");
-        } else {
-          console.log("[REGISTER] Timeout cleared: Token exists in Ref.");
         }
       }, 15000);
       return;
     }
 
     try {
-      console.log("[REGISTER] Starting API submission for:", email);
-      
       const registerPromise = fetch("/api/auth/register", {
         method: "POST",
         headers: {
@@ -97,7 +76,7 @@ export default function SignUpForm() {
         }),
       });
 
-      // Add a timeout to prevent infinite loader (matching login timeout)
+      // Timeout to prevent infinite loader
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error("REGISTER_TIMEOUT")), 20000)
       );
@@ -105,16 +84,13 @@ export default function SignUpForm() {
       const response = await Promise.race([registerPromise, timeoutPromise]) as Response;
       const data = await response.json();
 
-      console.log("[REGISTER] API result:", response.status, data);
-
       if (!response.ok) {
-        console.error("[REGISTER] Registration failed status:", response.status);
         if (response.status === 409) {
-          setError("An account with this email already exists. Try signing in or use a different email.");
+          setError("An account with this email already exists.");
         } else if (response.status === 429) {
-          setError(data.error || "Too many attempts. Please wait a moment before trying again.");
+          setError(data.error || "Too many attempts.");
         } else {
-          setError(data.error || "Registration failed. Please try again.");
+          setError(data.error || "Registration failed.");
         }
         setTurnstileToken(null);
         setShowTurnstile(false);
@@ -122,12 +98,10 @@ export default function SignUpForm() {
       }
 
       // Success - move to step 2
-      console.log("[REGISTER] Success! Moving to verification step.");
       setCurrentStep(1);
     } catch (err: any) {
-      console.error("[REGISTER] Exception during submission:", err);
       if (err.message === "REGISTER_TIMEOUT") {
-        setError("Registration timed out. Please check your connection and try again.");
+        setError("Registration timed out. Please try again.");
       } else {
         setError("Something went wrong. Please try again.");
       }
@@ -135,7 +109,6 @@ export default function SignUpForm() {
       setShowTurnstile(false);
     } finally {
       setIsLoading(false);
-      console.log("[REGISTER] Flow finished");
     }
   };
 

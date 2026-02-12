@@ -51,12 +51,12 @@ export async function verifyTurnstileToken(
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({
+        body: new URLSearchParams({
           secret: SECRET_KEY,
           response: token,
-          remoteip: ip,
+          remoteip: ip || '',
         }),
         signal: controller.signal
       }
