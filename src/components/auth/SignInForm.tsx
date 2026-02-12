@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Button from "@/components/ui/Button";
+import { InvisibleTurnstile } from "@/components/ui/InvisibleTurnstile";
 
 export default function SignInForm() {
   const router = useRouter();
@@ -24,52 +25,67 @@ export default function SignInForm() {
     }
   }, [searchParams]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [showTurnstile, setShowTurnstile] = useState(false);
+  const turnstileTokenRef = React.useRef<string | null>(null);
+
+  useEffect(() => {
+    turnstileTokenRef.current = turnstileToken;
+  }, [turnstileToken]);
+
+  const handleSubmit = async (e: React.FormEvent, token?: string) => {
+    e?.preventDefault();
     setIsLoading(true);
     setError(null);
     setSuccessMessage(null);
 
-    try {
-      console.log("[LOGIN] Starting sign-in for:", email);
+    // Security Check (Turnstile)
+    if (!token && !turnstileToken) {
+      setShowTurnstile(true);
       
-      // Add a timeout to prevent infinite loader
+      // Safety net: check after 15s
+      setTimeout(() => {
+        if (!turnstileTokenRef.current && !token) {
+          setError("Security verification is taking too long. Please refresh.");
+          setIsLoading(false);
+          setShowTurnstile(false);
+        }
+      }, 15000);
+      return;
+    }
+
+    try {
       const result = await signIn("credentials", {
         email: email.toLowerCase(),
         password,
-        redirect: false, // CRITICAL: Handle error in-place
+        turnstileToken: token || turnstileToken,
+        redirect: false,
       });
 
-      console.log("[LOGIN] Sign in result:", result);
-
       if (result?.error) {
-        console.error("[LOGIN] Sign in error:", result.error);
         if (result.error === "CredentialsSignin") {
           setError("Invalid email or password");
         } else if (result.error === "EmailNotVerified") {
-          setError("Please verify your email address before signing in. Check your inbox for the verification link.");
+          setError("Please verify your email address.");
         } else {
           setError(result.error);
         }
+        setTurnstileToken(null);
+        setShowTurnstile(false);
         setIsLoading(false);
         return;
       }
 
       if (result?.ok) {
-        console.log("[LOGIN] Success, redirecting...");
         router.push("/dashboard");
         router.refresh();
       }
     } catch (err: any) {
-      console.error("[LOGIN] Exception during sign-in:", err);
-      if (err.message === "SIGNIN_TIMEOUT") {
-        setError("Sign-in timed out. Please check your internet connection and try again.");
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+      setError("Something went wrong. Please try again.");
+      setTurnstileToken(null);
+      setShowTurnstile(false);
     } finally {
       setIsLoading(false);
-      console.log("[LOGIN] Sign-in flow finished");
     }
   };
 
@@ -218,6 +234,23 @@ export default function SignInForm() {
           <Link href="/privacy" className="text-rose-400/80 hover:text-rose-500 transition-colors decoration-rose-400/30 underline underline-offset-4">Privacy Policy</Link>.
         </p>
       </div>
+
+      {showTurnstile && (
+        <InvisibleTurnstile
+          action="signin"
+          onVerify={(token: string) => {
+            setTurnstileToken(token);
+            setShowTurnstile(false);
+            const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+            handleSubmit(fakeEvent, token);
+          }}
+          onError={(error: string) => {
+            setError(error);
+            setShowTurnstile(false);
+            setIsLoading(false);
+          }}
+        />
+      )}
     </form>
   );
 }
